@@ -1,18 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { Clinic } from "@/types/clinic";
 import LoadingSpinner from "@/components/ui/loading-spinner";
-
-// Fix for default markers in Leaflet
-if (typeof window !== 'undefined') {
-  delete (L.Icon.Default.prototype as any)._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-  });
-}
 
 interface InteractiveMapProps {
   clinics: Clinic[];
@@ -21,72 +9,56 @@ interface InteractiveMapProps {
 }
 
 export default function InteractiveMap({ clinics, onClinicClick, isLoading }: InteractiveMapProps) {
-  const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
+  const [L, setL] = useState<any>(null);
 
   useEffect(() => {
-    if (!mapContainerRef.current) return;
-
-    // Clean up existing map
-    if (mapRef.current) {
-      mapRef.current.remove();
-      mapRef.current = null;
-    }
+    let map: any = null;
 
     const initMap = async () => {
       try {
-        console.log('Starting map initialization...');
+        // Dynamic import of Leaflet
+        const leaflet = await import('leaflet');
+        await import('leaflet/dist/leaflet.css');
         
-        // Ensure the container is ready
-        if (!mapContainerRef.current) return;
-        
-        // Create map with proper options
-        mapRef.current = L.map(mapContainerRef.current, {
-          center: [20, 0],
-          zoom: 2,
-          zoomControl: true,
-          scrollWheelZoom: true,
-          doubleClickZoom: true,
-          attributionControl: true,
+        const LeafletLib = leaflet.default;
+        setL(LeafletLib);
+
+        // Fix marker icons
+        delete (LeafletLib.Icon.Default.prototype as any)._getIconUrl;
+        LeafletLib.Icon.Default.mergeOptions({
+          iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+          iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
         });
+
+        if (!mapContainerRef.current) return;
+
+        // Create map
+        map = LeafletLib.map(mapContainerRef.current).setView([20, 0], 2);
 
         // Add tile layer
-        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        LeafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
-          maxZoom: 18,
-        });
-        
-        tileLayer.addTo(mapRef.current);
-        
-        // Wait for tiles to load before marking as initialized
-        tileLayer.on('load', () => {
-          console.log('Map tiles loaded successfully');
-          setMapInitialized(true);
-        });
+        }).addTo(map);
 
-        // Also set initialized after a delay as fallback
-        setTimeout(() => {
-          console.log('Map initialization timeout reached');
-          setMapInitialized(true);
-        }, 2000);
+        setMapInitialized(true);
+        console.log('Map loaded successfully');
 
       } catch (error) {
-        console.error('Map initialization failed:', error);
-        setMapInitialized(true); // Show map container even if failed
+        console.error('Map failed to load:', error);
+        setMapInitialized(true); // Still show container
       }
     };
 
-    // Small delay to ensure DOM is ready
-    const timer = setTimeout(initMap, 100);
+    const timer = setTimeout(initMap, 500);
 
     return () => {
       clearTimeout(timer);
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
+      if (map) {
+        map.remove();
       }
-      setMapInitialized(false);
     };
   }, []);
 
@@ -105,17 +77,15 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
       <div 
         ref={mapContainerRef} 
         className="h-[calc(100vh-200px)] w-full bg-gray-100"
-        style={{ minHeight: '400px', zIndex: 1 }}
+        style={{ minHeight: '400px' }}
       />
       
       {!mapInitialized && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300">
-          <div className="text-center p-8">
-            <div className="mb-4">
-              <LoadingSpinner />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900">Loading Interactive Map</h3>
-            <p className="text-gray-600">Please wait while the map initializes...</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+          <div className="text-center">
+            <LoadingSpinner />
+            <p className="mt-2 text-gray-600">Loading map...</p>
+            <p className="text-xs text-gray-400 mt-1">Status: {mapInitialized ? 'Ready' : 'Loading'}</p>
           </div>
         </div>
       )}
