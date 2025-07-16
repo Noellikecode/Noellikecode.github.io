@@ -26,35 +26,59 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   const [mapInitialized, setMapInitialized] = useState(false);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
+    if (!mapContainerRef.current) return;
 
-    const timer = setTimeout(() => {
+    // Clean up existing map
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+
+    const initMap = async () => {
       try {
-        console.log('Initializing map...');
-        mapRef.current = L.map(mapContainerRef.current!, {
-          center: [40.7128, -74.0060],
+        console.log('Starting map initialization...');
+        
+        // Ensure the container is ready
+        if (!mapContainerRef.current) return;
+        
+        // Create map with proper options
+        mapRef.current = L.map(mapContainerRef.current, {
+          center: [20, 0],
           zoom: 2,
+          zoomControl: true,
           scrollWheelZoom: true,
+          doubleClickZoom: true,
+          attributionControl: true,
         });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Add tile layer
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 18,
-        }).addTo(mapRef.current);
+        });
+        
+        tileLayer.addTo(mapRef.current);
+        
+        // Wait for tiles to load before marking as initialized
+        tileLayer.on('load', () => {
+          console.log('Map tiles loaded successfully');
+          setMapInitialized(true);
+        });
 
-        // Force size invalidation after a brief delay
+        // Also set initialized after a delay as fallback
         setTimeout(() => {
-          if (mapRef.current) {
-            mapRef.current.invalidateSize();
-          }
-        }, 200);
+          console.log('Map initialization timeout reached');
+          setMapInitialized(true);
+        }, 2000);
 
-        setMapInitialized(true);
-        console.log('Map initialized successfully');
       } catch (error) {
-        console.error('Failed to initialize map:', error);
+        console.error('Map initialization failed:', error);
+        setMapInitialized(true); // Show map container even if failed
       }
-    }, 300);
+    };
+
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(initMap, 100);
 
     return () => {
       clearTimeout(timer);
@@ -62,6 +86,7 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         mapRef.current.remove();
         mapRef.current = null;
       }
+      setMapInitialized(false);
     };
   }, []);
 
