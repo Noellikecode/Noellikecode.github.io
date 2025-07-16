@@ -11,14 +11,14 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### Frontend Architecture
-- **Framework**: React with TypeScript
+- **Framework**: React with TypeScript (all client files use .tsx extensions)
 - **Build Tool**: Vite for development and bundling
 - **Routing**: Wouter for client-side routing
 - **UI Framework**: shadcn/ui components built on Radix UI primitives
 - **Styling**: Tailwind CSS with CSS variables for theming
 - **State Management**: TanStack Query for server state management
 - **Forms**: React Hook Form with Zod validation
-- **Mapping**: Leaflet.js for interactive maps
+- **Mapping**: Leaflet.js for interactive maps with dynamic imports
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js server
