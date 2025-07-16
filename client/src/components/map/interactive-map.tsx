@@ -21,74 +21,26 @@ interface InteractiveMapProps {
 }
 
 export default function InteractiveMap({ clinics, onClinicClick, isLoading }: InteractiveMapProps) {
-  const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
-  const markersRef = useRef<L.Marker[]>([]);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const timer = setTimeout(() => {
-      if (!mapRef.current && mapContainerRef.current) {
-        try {
-          mapRef.current = L.map(mapContainerRef.current).setView([20, 0], 2);
+    const map = L.map(mapContainerRef.current).setView([20, 0], 2);
 
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-          }).addTo(mapRef.current);
-          
-          setMapInitialized(true);
-        } catch (error) {
-          console.error('Map init error:', error);
-        }
-      }
-    }, 100);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+    }).addTo(map);
+    
+    setMapInitialized(true);
 
-    return () => clearTimeout(timer);
+    return () => {
+      map.remove();
+    };
   }, []);
 
-  useEffect(() => {
-    if (!mapRef.current || !mapInitialized || !clinics.length) return;
-
-    // Clear existing markers
-    markersRef.current.forEach(marker => mapRef.current!.removeLayer(marker));
-    markersRef.current = [];
-
-    // Add clinic markers
-    clinics.forEach((clinic) => {
-      const getMarkerColor = (costLevel: string) => {
-        switch (costLevel) {
-          case 'free': return '#4CAF50';
-          case 'low-cost': return '#FF9800';
-          case 'market-rate': return '#1976D2';
-          default: return '#9E9E9E';
-        }
-      };
-
-      const customIcon = L.divIcon({
-        html: `<div style="background-color: ${getMarkerColor(clinic.costLevel)}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
-        className: 'custom-marker',
-        iconSize: [16, 16],
-        iconAnchor: [8, 8],
-      });
-
-      const marker = L.marker([clinic.latitude, clinic.longitude], { icon: customIcon })
-        .addTo(mapRef.current!)
-        .on('click', () => onClinicClick(clinic));
-
-      markersRef.current.push(marker);
-
-      marker.bindPopup(`
-        <div style="padding: 8px; min-width: 200px;">
-          <h3 style="font-weight: 600; margin-bottom: 4px;">${clinic.name}</h3>
-          <p style="color: #666; font-size: 14px; margin: 2px 0;">${clinic.city}, ${clinic.country}</p>
-          <p style="font-size: 14px; margin: 2px 0;">Cost: ${clinic.costLevel}</p>
-          <p style="font-size: 14px; margin: 2px 0;">Services: ${clinic.services.join(', ')}</p>
-        </div>
-      `);
-    });
-  }, [clinics, onClinicClick, mapInitialized]);
+  // Markers will be added later
 
   if (isLoading) {
     return (
@@ -99,55 +51,18 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   }
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <div 
         ref={mapContainerRef} 
-        className="h-[calc(100vh-200px)] w-full bg-gray-100"
-        style={{ minHeight: '400px', zIndex: 1 }}
+        className="w-full bg-gray-200 border"
+        style={{ height: '500px' }}
       />
       
-      {/* Show loading message if map hasn't initialized */}
       {!mapInitialized && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300">
-          <div className="text-center p-8">
-            <div className="mb-4">
-              <div className="mx-auto h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
-              </div>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900">Interactive World Map</h3>
-            <p className="text-gray-600">Map is loading...</p>
-            <div className="mt-4">
-              <LoadingSpinner size="sm" />
-            </div>
-          </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <p>Loading map...</p>
         </div>
       )}
-      
-      {/* Map Legend */}
-      <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-4 z-[1000]">
-        <h3 className="font-semibold text-gray-900 mb-3">Legend</h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span>Free Services</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-            <span>Low Cost</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <span>Market Rate</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-            <span>Unverified</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
