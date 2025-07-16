@@ -21,22 +21,47 @@ interface InteractiveMapProps {
 }
 
 export default function InteractiveMap({ clinics, onClinicClick, isLoading }: InteractiveMapProps) {
+  const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
 
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    if (!mapContainerRef.current || mapRef.current) return;
 
-    const map = L.map(mapContainerRef.current).setView([20, 0], 2);
+    const timer = setTimeout(() => {
+      try {
+        console.log('Initializing map...');
+        mapRef.current = L.map(mapContainerRef.current!, {
+          center: [40.7128, -74.0060],
+          zoom: 2,
+          scrollWheelZoom: true,
+        });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-    }).addTo(map);
-    
-    setMapInitialized(true);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 18,
+        }).addTo(mapRef.current);
+
+        // Force size invalidation after a brief delay
+        setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.invalidateSize();
+          }
+        }, 200);
+
+        setMapInitialized(true);
+        console.log('Map initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize map:', error);
+      }
+    }, 300);
 
     return () => {
-      map.remove();
+      clearTimeout(timer);
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
   }, []);
 
@@ -51,16 +76,22 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative">
       <div 
         ref={mapContainerRef} 
-        className="w-full bg-gray-200 border"
-        style={{ height: '500px' }}
+        className="h-[calc(100vh-200px)] w-full bg-gray-100"
+        style={{ minHeight: '400px', zIndex: 1 }}
       />
       
       {!mapInitialized && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-          <p>Loading map...</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300">
+          <div className="text-center p-8">
+            <div className="mb-4">
+              <LoadingSpinner />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">Loading Interactive Map</h3>
+            <p className="text-gray-600">Please wait while the map initializes...</p>
+          </div>
         </div>
       )}
     </div>
