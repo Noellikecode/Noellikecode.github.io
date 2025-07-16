@@ -57,3 +57,19 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* Leaflet map styling fixes */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #f3f4f6;
+}
+
+.leaflet-control-container .leaflet-routing-container-hide {
+  display: none;
+}
+
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}

@@ -46,13 +46,10 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(clinics.createdAt));
   }
 
-  async createClinic(clinic: InsertClinic): Promise<Clinic> {
+  async createClinic(clinic: InsertClinic & { latitude: number; longitude: number; submittedBy: string }): Promise<Clinic> {
     const [newClinic] = await db
       .insert(clinics)
-      .values({
-        ...clinic,
-        updatedAt: new Date(),
-      })
+      .values(clinic)
       .returning();
     return newClinic;
   }

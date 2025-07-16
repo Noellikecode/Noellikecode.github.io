@@ -1,16 +1,18 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Clinic } from "@/types/clinic";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 
 // Fix for default markers in Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
+if (typeof window !== 'undefined') {
+  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  });
+}
 
 interface InteractiveMapProps {
   clinics: Clinic[];
@@ -21,23 +23,48 @@ interface InteractiveMapProps {
 export default function InteractiveMap({ clinics, onClinicClick, isLoading }: InteractiveMapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [mapInitialized, setMapInitialized] = useState(false);
 
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    if (!mapContainerRef.current || typeof window === 'undefined') return;
 
-    // Initialize map
-    mapRef.current = L.map(mapContainerRef.current, {
-      center: [40.7128, -74.0060], // Default to NYC
-      zoom: 2,
-      zoomControl: true,
-    });
+    // Ensure we don't initialize multiple times
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
 
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-    }).addTo(mapRef.current);
+    const timer = setTimeout(() => {
+      if (mapContainerRef.current && !mapRef.current) {
+        try {
+          mapRef.current = L.map(mapContainerRef.current, {
+            center: [40.7128, -74.0060], // Default to NYC
+            zoom: 2,
+            zoomControl: true,
+          });
+
+          // Add tile layer
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+          }).addTo(mapRef.current);
+          
+          // Invalidate size to ensure proper rendering
+          setTimeout(() => {
+            if (mapRef.current) {
+              mapRef.current.invalidateSize();
+            }
+          }, 300);
+          
+          setMapInitialized(true);
+        } catch (error) {
+          console.error('Failed to initialize map:', error);
+          setMapInitialized(false);
+        }
+      }
+    }, 200);
 
     return () => {
+      clearTimeout(timer);
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -102,7 +129,26 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
 
   return (
     <div className="relative">
-      <div ref={mapContainerRef} className="h-[calc(100vh-200px)] w-full bg-gray-100" />
+      <div 
+        ref={mapContainerRef} 
+        className="h-[calc(100vh-200px)] w-full bg-gray-100"
+        style={{ minHeight: '400px', zIndex: 1 }}
+      />
+      
+      {/* Show loading message if map hasn't initialized */}
+      {!mapInitialized && !isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="text-center">
+            <div className="mb-4">
+              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">Loading Map</h3>
+            <p className="text-gray-500">Initializing interactive world map...</p>
+          </div>
+        </div>
+      )}
       
       {/* Map Legend */}
       <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-4 z-[1000]">

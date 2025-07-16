@@ -69,6 +69,9 @@ export const insertClinicSchema = createInsertSchema(clinics).omit({
   verified: true,
   createdAt: true,
   updatedAt: true,
+  latitude: true,
+  longitude: true,
+  submittedBy: true,
 }).extend({
   services: z.array(z.string()).min(1, "At least one service must be selected"),
   costLevel: z.enum(["free", "low-cost", "market-rate"]),
