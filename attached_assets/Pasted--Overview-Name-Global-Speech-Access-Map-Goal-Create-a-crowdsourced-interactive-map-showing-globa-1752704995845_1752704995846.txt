@@ -1,0 +1,129 @@
+🌐 Overview
+Name: Global Speech Access Map
+Goal: Create a crowdsourced interactive map showing global access to speech therapy resources — clinics, programs, and teletherapy availability.
+
+🔧 Features & Functionality
+1. Interactive World Map (Frontend)
+Display an interactive map (use Leaflet.js or Mapbox GL JS).
+
+Show pins for clinics/locations.
+
+Pin hover/click opens a modal with:
+
+Clinic name
+
+Country, city, coordinates
+
+Language(s) supported
+
+Cost: free/low-cost/market-rate
+
+Teletherapy available: yes/no
+
+Notes (optional)
+
+Date added and contributor (if public)
+
+2. Submission Form
+Users can submit new locations via a form:
+
+Country (dropdown or autodetect via map)
+
+City
+
+Clinic name
+
+Services offered
+
+Accessibility level (checkboxes: stuttering, apraxia, voice, etc.)
+
+Cost estimate (dropdown)
+
+Teletherapy offered (yes/no)
+
+Languages supported
+
+Optional contact info
+
+Submissions require email for verification (basic CAPTCHA/email check)
+
+3. Database (Backend)
+Store all submissions with geolocation and metadata.
+
+Fields:
+
+id (UUID)
+
+name
+
+country, city, lat/lon
+
+languages (array)
+
+cost_level (enum)
+
+accessibility_tags (array)
+
+teletherapy (bool)
+
+contact_email (optional)
+
+verified (bool)
+
+submitted_by (email or anon id)
+
+created_at, updated_at
+
+4. Admin Panel
+Simple protected admin dashboard to:
+
+Review submissions
+
+Mark entries as verified
+
+Remove spam/inaccurate pins
+
+5. User Engagement Tracker
+Track:
+
+Total submissions
+
+Number of views (basic analytics)
+
+Most submitted countries
+
+Optionally: enable upvote/downvote of listings (requires auth)
+
+💻 Tech Stack Recommendations
+Component	Suggested Tools
+Frontend	React.js + Tailwind CSS or Next.js + Leaflet/Mapbox
+Backend	Node.js + Express or Python (FastAPI)
+Database	Firebase Firestore, MongoDB, or PostgreSQL
+Hosting	Vercel (frontend) + Render / Supabase / Firebase
+Authentication	Firebase Auth or email-only token-based (no passwords)
+Admin Panel	Simple /admin route with Google Auth (admin email check)
+
+📱 Optional Add-ons
+Mobile responsiveness (especially for field workers or clinicians abroad)
+
+Localization support for multilingual UI
+
+“Report a problem” button on each entry
+
+Export map data as CSV/JSON
+
+API route for others to pull verified clinic data (for integration with your app)
+
+✅ Output Goal
+A fully functional web app hosted publicly that:
+
+Allows crowd submissions of speech clinic access data
+
+Displays data cleanly on a map
+
+Verifies/curates data via admin flow
+
+Can be shared with nonprofits, clinics, and users around the world
+
+Can track global reach and impact
+
