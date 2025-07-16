@@ -24,100 +24,71 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
+  const markersRef = useRef<L.Marker[]>([]);
 
   useEffect(() => {
-    if (!mapContainerRef.current || typeof window === 'undefined') return;
-
-    // Ensure we don't initialize multiple times
-    if (mapRef.current) {
-      mapRef.current.remove();
-      mapRef.current = null;
-    }
+    if (!mapContainerRef.current) return;
 
     const timer = setTimeout(() => {
-      if (mapContainerRef.current && !mapRef.current) {
+      if (!mapRef.current && mapContainerRef.current) {
         try {
-          mapRef.current = L.map(mapContainerRef.current, {
-            center: [40.7128, -74.0060], // Default to NYC
-            zoom: 2,
-            zoomControl: true,
-          });
+          mapRef.current = L.map(mapContainerRef.current).setView([20, 0], 2);
 
-          // Add tile layer
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
           }).addTo(mapRef.current);
           
-          // Invalidate size to ensure proper rendering
-          setTimeout(() => {
-            if (mapRef.current) {
-              mapRef.current.invalidateSize();
-            }
-          }, 300);
-          
           setMapInitialized(true);
         } catch (error) {
-          console.error('Failed to initialize map:', error);
-          setMapInitialized(false);
+          console.error('Map init error:', error);
         }
       }
-    }, 200);
+    }, 100);
 
-    return () => {
-      clearTimeout(timer);
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    if (!mapRef.current || !clinics.length) return;
+    if (!mapRef.current || !mapInitialized || !clinics.length) return;
 
     // Clear existing markers
-    mapRef.current.eachLayer((layer) => {
-      if (layer instanceof L.Marker) {
-        mapRef.current!.removeLayer(layer);
-      }
-    });
+    markersRef.current.forEach(marker => mapRef.current!.removeLayer(marker));
+    markersRef.current = [];
 
     // Add clinic markers
     clinics.forEach((clinic) => {
-      if (!clinic.latitude || !clinic.longitude) return;
-
-      // Create custom icon based on cost level
       const getMarkerColor = (costLevel: string) => {
         switch (costLevel) {
-          case 'free': return '#4CAF50'; // Green
-          case 'low-cost': return '#FF9800'; // Orange
-          case 'market-rate': return '#1976D2'; // Blue
-          default: return '#9E9E9E'; // Gray
+          case 'free': return '#4CAF50';
+          case 'low-cost': return '#FF9800';
+          case 'market-rate': return '#1976D2';
+          default: return '#9E9E9E';
         }
       };
 
       const customIcon = L.divIcon({
-        html: `<div style="background-color: ${getMarkerColor(clinic.costLevel)}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+        html: `<div style="background-color: ${getMarkerColor(clinic.costLevel)}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
         className: 'custom-marker',
-        iconSize: [20, 20],
-        iconAnchor: [10, 10],
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
       });
 
       const marker = L.marker([clinic.latitude, clinic.longitude], { icon: customIcon })
         .addTo(mapRef.current!)
         .on('click', () => onClinicClick(clinic));
 
-      // Add popup
+      markersRef.current.push(marker);
+
       marker.bindPopup(`
-        <div class="p-2">
-          <h3 class="font-semibold">${clinic.name}</h3>
-          <p class="text-sm text-gray-600">${clinic.city}, ${clinic.country}</p>
-          <p class="text-sm">Cost: ${clinic.costLevel}</p>
-          <p class="text-sm">Services: ${clinic.services.slice(0, 2).join(', ')}${clinic.services.length > 2 ? '...' : ''}</p>
+        <div style="padding: 8px; min-width: 200px;">
+          <h3 style="font-weight: 600; margin-bottom: 4px;">${clinic.name}</h3>
+          <p style="color: #666; font-size: 14px; margin: 2px 0;">${clinic.city}, ${clinic.country}</p>
+          <p style="font-size: 14px; margin: 2px 0;">Cost: ${clinic.costLevel}</p>
+          <p style="font-size: 14px; margin: 2px 0;">Services: ${clinic.services.join(', ')}</p>
         </div>
       `);
     });
-  }, [clinics, onClinicClick]);
+  }, [clinics, onClinicClick, mapInitialized]);
 
   if (isLoading) {
     return (
