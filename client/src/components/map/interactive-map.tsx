@@ -37,11 +37,11 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
 
         // Create map with zoom constraints
         map = LeafletLib.map(mapContainerRef.current, {
-          center: [20, 0],
-          zoom: 2,
-          minZoom: 2,
+          center: [30, 0],
+          zoom: 3,
+          minZoom: 3,
           maxZoom: 18,
-          maxBounds: [[-85, -180], [85, 180]],
+          maxBounds: [[-70, -170], [70, 170]],
           maxBoundsViscosity: 1.0
         });
 
@@ -49,9 +49,12 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         LeafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           noWrap: true,
-          bounds: [[-85, -180], [85, 180]]
+          bounds: [[-70, -170], [70, 170]]
         }).addTo(map);
 
+        // Fit the map to world bounds to minimize gray space
+        map.fitWorld({ maxZoom: 3 });
+        
         setMapInitialized(true);
         console.log('Map loaded successfully');
 
