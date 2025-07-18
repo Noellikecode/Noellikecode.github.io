@@ -186,23 +186,49 @@ export default function AdminDashboard({
                 </Select>
               </div>
               
-              <Button 
-                onClick={() => onImportNPI(selectedState || undefined, importLimit)}
-                disabled={isImporting}
-                className="w-full sm:w-auto"
-              >
-                {isImporting ? (
-                  <>
-                    <LoadingSpinner className="mr-2 h-4 w-4" />
-                    Importing...
-                  </>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-4 w-4" />
-                    Import Centers
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => onImportNPI(selectedState || undefined, importLimit)}
+                  disabled={isImporting}
+                  className="flex-1 sm:flex-none"
+                >
+                  {isImporting ? (
+                    <>
+                      <LoadingSpinner className="mr-2 h-4 w-4" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Import Centers
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={() => {
+                    // Import from multiple major states
+                    const states = ['CA', 'NY', 'TX', 'FL', 'PA', 'IL', 'OH', 'GA', 'NC', 'MI'];
+                    states.forEach((state, index) => {
+                      setTimeout(() => {
+                        onImportNPI(state, 20);
+                      }, index * 2000); // Stagger requests to avoid rate limiting
+                    });
+                  }}
+                  disabled={isImporting}
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                >
+                  {isImporting ? (
+                    <>
+                      <LoadingSpinner className="mr-2 h-4 w-4" />
+                      Bulk Import...
+                    </>
+                  ) : (
+                    'Bulk Import (200+ centers)'
+                  )}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
