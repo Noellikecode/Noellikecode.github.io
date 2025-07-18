@@ -125,7 +125,7 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
       <div 
         ref={mapContainerRef} 
         className="h-full w-full bg-gray-100"
-        style={{ height: '100vh', width: '100vw' }}
+        style={{ minHeight: '400px' }}
       />
       
       {!mapInitialized && (

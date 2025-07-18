@@ -59,70 +59,90 @@ export default function Home() {
   });
 
   return (
-    <div className="h-screen w-screen bg-gray-900 relative overflow-hidden">
-      {/* Floating Controls */}
-      <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start">
-        <div className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Globe className="text-white h-4 w-4" />
+    <div className="h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b flex-shrink-0 relative z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <Globe className="text-white h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">Global Speech Access Map</h1>
+                <p className="text-sm text-gray-500">Crowdsourced speech therapy resources worldwide</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">Global Speech Access Map</h1>
-              <p className="text-xs text-gray-600">{analytics?.totalLocations || 0} Locations • {analytics?.totalViews || 0} Views</p>
+            <div className="flex items-center space-x-4">
+              <Button onClick={() => setIsSubmissionModalOpen(true)} className="bg-primary hover:bg-primary/90">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Location
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setLocation("/admin")}>
+                <Settings className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button onClick={() => setIsSubmissionModalOpen(true)} className="bg-primary hover:bg-primary/90 shadow-lg">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Location
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => setLocation("/admin")} className="bg-white/90 backdrop-blur-sm shadow-lg">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      </header>
 
-      {/* Floating Filter Controls */}
-      <div className="absolute top-20 left-4 z-20 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg max-w-md">
-        <div className="flex flex-wrap items-center gap-3">
-          <Select value={filters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
-            <SelectTrigger className="w-28 h-8">
-              <SelectValue placeholder="Cost" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Costs</SelectItem>
-              <SelectItem value="free">Free</SelectItem>
-              <SelectItem value="low-cost">Low Cost</SelectItem>
-              <SelectItem value="market-rate">Market Rate</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filters.services} onValueChange={(value) => handleFilterChange("services", value)}>
-            <SelectTrigger className="w-32 h-8">
-              <SelectValue placeholder="Services" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Services</SelectItem>
-              <SelectItem value="stuttering">Stuttering</SelectItem>
-              <SelectItem value="apraxia">Apraxia</SelectItem>
-              <SelectItem value="voice">Voice Therapy</SelectItem>
-              <SelectItem value="language">Language Therapy</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="teletherapy" 
-              checked={filters.teletherapy}
-              onCheckedChange={(checked) => handleFilterChange("teletherapy", checked)}
-            />
-            <label htmlFor="teletherapy" className="text-xs text-gray-700">Teletherapy</label>
+      {/* Map Controls */}
+      <div className="bg-white border-b px-4 py-3 flex-shrink-0 relative z-10">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">Filter by Cost:</label>
+              <Select value={filters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="free">Free</SelectItem>
+                  <SelectItem value="low-cost">Low Cost</SelectItem>
+                  <SelectItem value="market-rate">Market Rate</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">Services:</label>
+              <Select value={filters.services} onValueChange={(value) => handleFilterChange("services", value)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="All Services" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Services</SelectItem>
+                  <SelectItem value="stuttering">Stuttering</SelectItem>
+                  <SelectItem value="apraxia">Apraxia</SelectItem>
+                  <SelectItem value="voice">Voice Therapy</SelectItem>
+                  <SelectItem value="language">Language Therapy</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="teletherapy" 
+                checked={filters.teletherapy}
+                onCheckedChange={(checked) => handleFilterChange("teletherapy", checked)}
+              />
+              <label htmlFor="teletherapy" className="text-sm text-gray-700">Teletherapy Available</label>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <span className="flex items-center">
+              <MapPin className="text-primary mr-1 h-4 w-4" />
+              {analytics?.totalLocations || 0} Locations
+            </span>
+            <span className="flex items-center">
+              <Users className="text-green-500 mr-1 h-4 w-4" />
+              {analytics?.totalViews || 0} Views
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Full Screen Map */}
-      <div className="absolute inset-0 z-10">
+      {/* Map Container - Takes remaining full height */}
+      <div className="flex-1 min-h-0">
         <InteractiveMap 
           clinics={filteredClinics} 
           onClinicClick={setSelectedClinic}
@@ -141,6 +161,23 @@ export default function Home() {
         isOpen={isSubmissionModalOpen}
         onClose={() => setIsSubmissionModalOpen(false)}
       />
+
+      {/* Mobile Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden z-30">
+        <div className="flex justify-around py-2">
+          <button className="flex flex-col items-center py-2 px-4 text-primary">
+            <MapPin className="h-5 w-5" />
+            <span className="text-xs mt-1">Map</span>
+          </button>
+          <button 
+            className="flex flex-col items-center py-2 px-4 text-gray-600"
+            onClick={() => setIsSubmissionModalOpen(true)}
+          >
+            <Plus className="h-5 w-5" />
+            <span className="text-xs mt-1">Add</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
