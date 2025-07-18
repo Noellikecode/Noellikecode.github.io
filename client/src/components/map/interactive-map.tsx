@@ -4,11 +4,12 @@ import LoadingSpinner from "@/components/ui/loading-spinner";
 
 interface InteractiveMapProps {
   clinics: Clinic[];
+  filteredClinics: Clinic[];
   onClinicClick: (clinic: Clinic) => void;
   isLoading?: boolean;
 }
 
-export default function InteractiveMap({ clinics, onClinicClick, isLoading }: InteractiveMapProps) {
+export default function InteractiveMap({ clinics, filteredClinics, onClinicClick, isLoading }: InteractiveMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -159,18 +160,22 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         const bounds = new (await import('leaflet')).LatLngBounds();
         let markerCount = 0;
 
-        // Progressive marker loading system - show ALL markers but load smoothly
-        const markersToShow = clinics; // Show ALL 5,036+ markers
+        // Smart initial load - show representative sample, load more on filter
+        const hasActiveFilters = filteredClinics.length < clinics.length;
+        const markersToShow = hasActiveFilters 
+          ? filteredClinics  // Show filtered results when user applies filters
+          : clinics.slice(0, 1500); // Show 1500 markers initially for fast loading
         
-        // Dynamic batch sizing based on zoom level for smoothness
-        const getBatchSize = (zoom: number) => {
+        // Dynamic batch sizing for smooth loading
+        const getBatchSize = (zoom: number, isFiltered: boolean) => {
+          if (isFiltered) return 200; // Larger batches for filtered results (smaller dataset)
           if (zoom <= 3) return 50;   // Smaller batches at low zoom for responsiveness
           if (zoom <= 5) return 100;  // Medium batches at medium zoom
-          return 200;                 // Larger batches at high zoom for speed
+          return 150;                 // Moderate batches for initial load
         };
 
         // Process with dynamic batch sizing for optimal performance
-        const currentBatchSize = getBatchSize(map.getZoom());
+        const currentBatchSize = getBatchSize(map.getZoom(), hasActiveFilters);
         const batches = [];
         for (let i = 0; i < markersToShow.length; i += currentBatchSize) {
           batches.push(markersToShow.slice(i, i + currentBatchSize));
@@ -218,8 +223,8 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
             }
           }
           
-          // Dynamic delay based on batch size to maintain smoothness
-          const delay = currentBatchSize > 100 ? 10 : 5;
+          // Dynamic delay: faster for filtered results, slower for initial load
+          const delay = hasActiveFilters ? 5 : (currentBatchSize > 100 ? 15 : 10);
           await new Promise(resolve => setTimeout(resolve, delay));
         }
 
@@ -237,8 +242,9 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           clearTimeout(zoomTimeout);
           zoomTimeout = setTimeout(() => {
             const newZoom = map.getZoom();
-            console.log(`Zoom ${newZoom}: ${markerCount} of ${clinics.length} markers loaded`);
-          }, 150); // Reduced debounce for more responsive feedback
+            const status = hasActiveFilters ? 'filtered' : 'initial sample';
+            console.log(`Zoom ${newZoom}: ${markerCount} markers (${status})`);
+          }, 150);
         });
 
         // Fit map to markers

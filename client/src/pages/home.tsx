@@ -153,8 +153,15 @@ export default function Home() {
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <span className="flex items-center">
               <MapPin className="text-primary mr-1 h-4 w-4" />
-              {analytics?.totalLocations || 0} Locations
+              {filteredClinics.length === clinics.length 
+                ? `${filteredClinics.length} Total Centers` 
+                : `${filteredClinics.length} of ${clinics.length} Centers`}
             </span>
+            {filteredClinics.length < clinics.length && (
+              <span className="text-blue-600 text-xs bg-blue-50 px-2 py-1 rounded">
+                Filters Applied
+              </span>
+            )}
             <span className="flex items-center">
               <Users className="text-green-500 mr-1 h-4 w-4" />
               {analytics?.totalViews || 0} Views
@@ -166,7 +173,8 @@ export default function Home() {
       {/* Map Container - Takes remaining full height */}
       <div className="flex-1 min-h-0">
         <InteractiveMap 
-          clinics={filteredClinics} 
+          clinics={clinics}
+          filteredClinics={filteredClinics} 
           onClinicClick={setSelectedClinic}
           isLoading={isLoading}
         />
