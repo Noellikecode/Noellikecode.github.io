@@ -24,7 +24,20 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
     let retryTimeout: NodeJS.Timeout;
 
     const attemptMapInitialization = async () => {
-      if (!mapContainerRef.current || !mounted || mapInstanceRef.current || initializingRef.current) return;
+      if (!mapContainerRef.current || !mounted || initializingRef.current) return;
+      
+      // Clear existing map when filters change
+      if (mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current.remove();
+        } catch (e) {}
+        mapInstanceRef.current = null;
+        markersRef.current = [];
+        setMapReady(false);
+      }
+      
+      // Reset attempt counter for new filter requests
+      initAttemptRef.current = 0;
       
       initializingRef.current = true;
 
@@ -160,9 +173,17 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         const bounds = new (await import('leaflet')).LatLngBounds();
         let markerCount = 0;
 
-        // Smart initial load - show nothing until filters applied
+        // Smart load - show filtered results only
         const hasActiveFilters = filteredClinics.length > 0;
         const markersToShow = filteredClinics; // Only show filtered results
+        
+        // If no markers to show, don't initialize map
+        if (markersToShow.length === 0) {
+          console.log('No markers to show, skipping map initialization');
+          setMapReady(true);
+          initializingRef.current = false;
+          return;
+        }
         
         // Dynamic batch sizing for smooth loading
         const getBatchSize = (zoom: number, isFiltered: boolean) => {
@@ -265,6 +286,15 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         setMapReady(true);
         setMapError(false);
         initializingRef.current = false;
+        
+        // Try to fit bounds if we have markers
+        if (markerCount > 0 && bounds.isValid()) {
+          try {
+            map.fitBounds(bounds, { padding: [20, 20] });
+          } catch (e) {
+            console.warn('Failed to fit bounds, using default view');
+          }
+        }
 
       } catch (error) {
         console.error(`Map initialization attempt ${initAttemptRef.current} failed:`, error);
@@ -309,7 +339,7 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         mapInstanceRef.current = null;
       }
     };
-  }, [clinics, onClinicClick]);
+  }, [clinics, filteredClinics, onClinicClick]);
 
   if (isLoading) {
     return (
