@@ -23,45 +23,91 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState(false);
+  const initTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    if (!mapContainerRef.current || mapRef.current) return;
 
-    try {
-      // Initialize the map
-      const map = L.map(mapContainerRef.current, {
-        center: [39.8283, -98.5795], // Center of USA
-        zoom: 4,
-        zoomControl: true,
-        scrollWheelZoom: true,
-        doubleClickZoom: true,
-        dragging: true
-      });
+    let mounted = true;
+    
+    const initializeMap = async () => {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 100)); // Wait for DOM
+        
+        if (!mounted || !mapContainerRef.current) return;
 
-      // Add OpenStreetMap tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18,
-        minZoom: 2
-      }).addTo(map);
+        // Clear any existing map instance
+        if (mapRef.current) {
+          mapRef.current.remove();
+          mapRef.current = null;
+        }
 
-      mapRef.current = map;
-      
-      // Set map ready after a short delay to ensure tiles load
-      setTimeout(() => {
-        map.invalidateSize();
-        setMapReady(true);
-        console.log('Leaflet map initialized successfully');
-      }, 100);
+        // Initialize the map
+        const map = L.map(mapContainerRef.current, {
+          center: [39.8283, -98.5795], // Center of USA
+          zoom: 4,
+          zoomControl: true,
+          scrollWheelZoom: true,
+          doubleClickZoom: true,
+          dragging: true,
+          preferCanvas: true // Better performance
+        });
 
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      setMapReady(true); // Show even if there's an error
-    }
+        // Add OpenStreetMap tile layer
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 18,
+          minZoom: 2
+        });
+
+        tileLayer.addTo(map);
+        mapRef.current = map;
+        
+        // Wait for tiles to start loading, then mark as ready
+        tileLayer.on('loading', () => {
+          console.log('Map tiles loading...');
+        });
+
+        tileLayer.on('load', () => {
+          if (mounted) {
+            console.log('Map tiles loaded successfully');
+            setMapReady(true);
+            setMapError(false);
+          }
+        });
+
+        // Fallback timeout to mark ready even if tiles don't load
+        initTimeoutRef.current = setTimeout(() => {
+          if (mounted && !mapReady) {
+            console.log('Map initialization timeout, marking as ready');
+            map.invalidateSize();
+            setMapReady(true);
+          }
+        }, 3000);
+
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        if (mounted) {
+          setMapError(true);
+          setMapReady(true);
+        }
+      }
+    };
+
+    initializeMap();
 
     return () => {
+      mounted = false;
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+      }
       if (mapRef.current) {
-        mapRef.current.remove();
+        try {
+          mapRef.current.remove();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
         mapRef.current = null;
       }
     };
@@ -143,13 +189,28 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         <div className="absolute inset-0 bg-blue-50 flex items-center justify-center z-10">
           <div className="text-center">
             <LoadingSpinner />
-            <p className="mt-2 text-gray-700">Loading map...</p>
-            <p className="text-xs text-gray-500 mt-1">Initializing interactive map</p>
+            <p className="mt-2 text-gray-700">Loading interactive map...</p>
+            <p className="text-xs text-gray-500 mt-1">Please wait while the map initializes</p>
           </div>
         </div>
       )}
 
-      {mapReady && (
+      {mapError && mapReady && (
+        <div className="absolute inset-0 bg-red-50 flex items-center justify-center z-10">
+          <div className="text-center p-6">
+            <div className="text-red-600 mb-2">⚠️ Map Loading Error</div>
+            <p className="text-gray-700 mb-4">The interactive map failed to load properly.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mapReady && !mapError && (
         <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-10">
           <div className="text-sm font-semibold text-gray-800">Speech Therapy Centers</div>
           <div className="text-xs text-gray-600">{clinics.length} locations found</div>
