@@ -7,9 +7,11 @@ interface InteractiveMapProps {
   filteredClinics: Clinic[];
   onClinicClick: (clinic: Clinic) => void;
   isLoading?: boolean;
+  selectedState?: string;
+  getStateBounds?: (state: string) => any;
 }
 
-export default function InteractiveMap({ clinics, filteredClinics, onClinicClick, isLoading }: InteractiveMapProps) {
+export default function InteractiveMap({ clinics, filteredClinics, onClinicClick, isLoading, selectedState, getStateBounds }: InteractiveMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -287,8 +289,18 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         setMapError(false);
         initializingRef.current = false;
         
-        // Try to fit bounds if we have markers
-        if (markerCount > 0 && bounds.isValid()) {
+        // Handle state-specific zooming or fit bounds
+        if (selectedState && selectedState !== "all" && getStateBounds) {
+          const stateBounds = getStateBounds(selectedState);
+          if (stateBounds) {
+            try {
+              map.setView(stateBounds.center, stateBounds.zoom);
+              console.log(`Zoomed to ${selectedState}: center ${stateBounds.center}, zoom ${stateBounds.zoom}`);
+            } catch (e) {
+              console.warn('Failed to zoom to state, using marker bounds');
+            }
+          }
+        } else if (markerCount > 0 && bounds.isValid()) {
           try {
             map.fitBounds(bounds, { padding: [20, 20] });
           } catch (e) {

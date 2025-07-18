@@ -24,6 +24,7 @@ export default function Home() {
     services: "all",
     teletherapy: false,
     country: "all",
+    state: "all",
   });
 
   const { data: clinics = [], isLoading } = useQuery({
@@ -51,13 +52,43 @@ export default function Home() {
 
 
 
-  // Memoized filtering for performance with large datasets
+  // State coordinate boundaries for accurate filtering and zooming
+  const getStateBounds = (state: string) => {
+    const stateBounds: Record<string, {lat: [number, number], lng: [number, number], center: [number, number], zoom: number}> = {
+      'california': { lat: [32.5, 42.0], lng: [-125.0, -114.0], center: [36.7783, -119.4179], zoom: 6 },
+      'texas': { lat: [25.8, 36.5], lng: [-106.7, -93.5], center: [31.9686, -99.9018], zoom: 6 },
+      'georgia': { lat: [30.3, 35.0], lng: [-85.6, -80.9], center: [33.2490, -83.4410], zoom: 7 },
+      'pennsylvania': { lat: [39.7, 42.3], lng: [-80.5, -74.7], center: [40.2732, -77.1017], zoom: 7 },
+      'north-carolina': { lat: [33.8, 36.6], lng: [-84.3, -75.4], center: [35.7596, -79.0193], zoom: 7 },
+      'ohio': { lat: [38.4, 41.98], lng: [-84.8, -80.5], center: [40.4173, -82.9071], zoom: 7 },
+      'new-york': { lat: [40.5, 45.0], lng: [-79.8, -71.8], center: [42.1657, -74.9481], zoom: 7 },
+      'illinois': { lat: [37.0, 42.5], lng: [-91.5, -87.0], center: [40.3363, -89.0022], zoom: 7 },
+      'alaska': { lat: [54.0, 71.5], lng: [-180.0, -130.0], center: [61.2181, -149.9003], zoom: 4 },
+      'florida': { lat: [24.4, 31.0], lng: [-87.6, -80.0], center: [27.7663, -81.6868], zoom: 7 },
+      'michigan': { lat: [41.7, 48.3], lng: [-90.4, -82.4], center: [44.3467, -85.4102], zoom: 6 },
+      'hawaii': { lat: [18.9, 22.2], lng: [-160.3, -154.8], center: [21.0943, -157.4983], zoom: 7 }
+    };
+    return stateBounds[state] || null;
+  };
+
+  // Enhanced filtering with accurate state-based geographic filtering
   const filteredClinics = useMemo(() => {
     return clinics.filter((clinic: Clinic) => {
       if (filters.costLevel !== "all" && clinic.costLevel !== filters.costLevel) return false;
       if (filters.services !== "all" && !clinic.services.includes(filters.services)) return false;
       if (filters.teletherapy && !clinic.teletherapy) return false;
       if (filters.country !== "all" && clinic.country !== filters.country) return false;
+      
+      // State-based geographic filtering
+      if (filters.state !== "all") {
+        const bounds = getStateBounds(filters.state);
+        if (bounds && clinic.latitude && clinic.longitude) {
+          const inLatBounds = clinic.latitude >= bounds.lat[0] && clinic.latitude <= bounds.lat[1];
+          const inLngBounds = clinic.longitude >= bounds.lng[0] && clinic.longitude <= bounds.lng[1];
+          if (!inLatBounds || !inLngBounds) return false;
+        }
+      }
+      
       return true;
     });
   }, [clinics, filters]);
@@ -188,6 +219,8 @@ export default function Home() {
           filteredClinics={hasAppliedFilters ? filteredClinics : []} 
           onClinicClick={setSelectedClinic}
           isLoading={isLoading}
+          selectedState={filters.state}
+          getStateBounds={getStateBounds}
         />
       </div>
 

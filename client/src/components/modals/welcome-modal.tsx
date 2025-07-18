@@ -19,6 +19,7 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
     services: "all",
     teletherapy: false,
     country: "all",
+    state: "all",
   });
 
   const handleFilterChange = (key: string, value: any) => {
@@ -33,7 +34,8 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
   const hasActiveFilters = filters.costLevel !== "all" || 
                           filters.services !== "all" || 
                           filters.teletherapy || 
-                          filters.country !== "all";
+                          filters.country !== "all" ||
+                          filters.state !== "all";
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
@@ -61,6 +63,33 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    State/Region
+                  </label>
+                  <Select value={filters.state} onValueChange={(value) => handleFilterChange("state", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All states" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All States</SelectItem>
+                      <SelectItem value="california">California (441+ centers)</SelectItem>
+                      <SelectItem value="texas">Texas (193+ centers)</SelectItem>
+                      <SelectItem value="georgia">Georgia (174+ centers)</SelectItem>
+                      <SelectItem value="pennsylvania">Pennsylvania (127+ centers)</SelectItem>
+                      <SelectItem value="north-carolina">North Carolina (105+ centers)</SelectItem>
+                      <SelectItem value="ohio">Ohio (77+ centers)</SelectItem>
+                      <SelectItem value="new-york">New York (69+ centers)</SelectItem>
+                      <SelectItem value="illinois">Illinois (64+ centers)</SelectItem>
+                      <SelectItem value="alaska">Alaska (44+ centers)</SelectItem>
+                      <SelectItem value="florida">Florida (43+ centers)</SelectItem>
+                      <SelectItem value="michigan">Michigan (42+ centers)</SelectItem>
+                      <SelectItem value="hawaii">Hawaii (11+ centers)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Cost Level</label>
                   <Select value={filters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
