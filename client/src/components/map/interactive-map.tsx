@@ -15,22 +15,19 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
-    if (!mapContainerRef.current) return;
-    
-    // Clean up any existing map
-    if (mapRef.current) {
-      mapRef.current.remove();
-      mapRef.current = null;
-    }
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    let mounted = true;
 
     const initMap = async () => {
       try {
-        // Add a small delay to ensure DOM is ready
-        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log('Starting map initialization...');
         
         // Dynamic import of Leaflet
         const leaflet = await import('leaflet');
         await import('leaflet/dist/leaflet.css');
+        
+        if (!mounted) return;
         
         const L = leaflet.default;
 
@@ -42,6 +39,10 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
         });
 
+        if (!mapContainerRef.current || !mounted) return;
+
+        console.log('Creating map with container:', mapContainerRef.current);
+        
         // Create map centered on North America
         mapRef.current = L.map(mapContainerRef.current, {
           center: [39.8283, -98.5795], // Center of USA
@@ -50,32 +51,36 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           maxZoom: 18
         });
 
+        console.log('Map created, adding tile layer...');
+
         // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
         }).addTo(mapRef.current);
 
-        // Force map to invalidate size after a short delay
-        setTimeout(() => {
-          if (mapRef.current) {
-            mapRef.current.invalidateSize();
-          }
-        }, 200);
+        console.log('Tile layer added, invalidating size...');
 
-        setMapInitialized(true);
-        console.log('Map initialized successfully');
+        // Force map to invalidate size after initialization
+        setTimeout(() => {
+          if (mapRef.current && mounted) {
+            mapRef.current.invalidateSize();
+            setMapInitialized(true);
+            console.log('Map initialized successfully');
+          }
+        }, 100);
 
       } catch (error) {
         console.error('Map failed to load:', error);
-        // Set initialized to true anyway to prevent endless loading
-        setMapInitialized(true);
+        if (mounted) {
+          setMapInitialized(true);
+        }
       }
     };
 
-    const timer = setTimeout(initMap, 100);
+    initMap();
 
     return () => {
-      clearTimeout(timer);
+      mounted = false;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -142,20 +147,22 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
     );
   }
 
+  console.log('Rendering map component, mapInitialized:', mapInitialized, 'isLoading:', isLoading);
+
   return (
-    <div className="relative h-full">
+    <div className="relative h-full w-full">
       <div 
         ref={mapContainerRef} 
         className="h-full w-full bg-gray-100"
-        style={{ minHeight: '400px' }}
+        style={{ minHeight: '400px', height: '100%' }}
       />
       
       {!mapInitialized && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50">
           <div className="text-center">
             <LoadingSpinner />
             <p className="mt-2 text-gray-600">Loading map...</p>
-            <p className="text-xs text-gray-400 mt-1">Status: {mapInitialized ? 'Ready' : 'Loading'}</p>
+            <p className="text-xs text-gray-400 mt-1">Status: {mapInitialized ? 'Ready' : 'Initializing'}</p>
           </div>
         </div>
       )}
