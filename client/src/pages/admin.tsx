@@ -67,6 +67,30 @@ export default function Admin() {
     },
   });
 
+  const importNPIMutation = useMutation({
+    mutationFn: async ({ state, limit }: { state?: string; limit?: number }) => {
+      return await apiRequest("POST", "/api/admin/import-npi", {
+        state,
+        limit: limit || 50,
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clinics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      toast({
+        title: "Import Completed",
+        description: `Imported ${data.imported} new clinics from NPI database. Skipped ${data.skipped} duplicates.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Import Failed",
+        description: "Failed to import clinics from NPI database",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Admin Header */}
@@ -113,8 +137,10 @@ export default function Admin() {
             isLoading={isLoading}
             onApprove={(id) => approveMutation.mutate(id)}
             onReject={(id, reason) => rejectMutation.mutate({ submissionId: id, reason })}
+            onImportNPI={(state, limit) => importNPIMutation.mutate({ state, limit })}
             isApproving={approveMutation.isPending}
             isRejecting={rejectMutation.isPending}
+            isImporting={importNPIMutation.isPending}
           />
         </div>
       </div>

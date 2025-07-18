@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertClinicSchema, insertSubmissionSchema } from "@shared/schema";
 import { z } from "zod";
+import { npiService } from "./npi-service";
+import { getCoordinates } from "@shared/utils";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all verified clinics
@@ -53,26 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertClinicSchema.parse(req.body);
       
-      // Simple geocoding based on major cities (for demo purposes)
-      const getCoordinates = (city: string, country: string) => {
-        const cityCoords: Record<string, [number, number]> = {
-          'new york': [40.7128, -74.0060],
-          'los angeles': [34.0522, -118.2437],
-          'chicago': [41.8781, -87.6298],
-          'london': [51.5074, -0.1278],
-          'paris': [48.8566, 2.3522],
-          'toronto': [43.6532, -79.3832],
-          'sydney': [-33.8688, 151.2093],
-          'tokyo': [35.6762, 139.6503],
-          'berlin': [52.5200, 13.4050],
-          'madrid': [40.4168, -3.7038],
-        };
-        
-        const key = city.toLowerCase();
-        return cityCoords[key] || [40.7128, -74.0060]; // Default to NYC
-      };
-      
-      const [latitude, longitude] = getCoordinates(validatedData.city, validatedData.country);
+      const [latitude, longitude] = await getCoordinates(validatedData.city, validatedData.country);
       
       const clinicData = {
         ...validatedData,
@@ -183,6 +166,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error recording view:", error);
       res.status(500).json({ message: "Failed to record view" });
+    }
+  });
+
+  // Import speech therapy centers from NPI
+  app.post("/api/admin/import-npi", async (req, res) => {
+    try {
+      const { state, limit = 50 } = req.body;
+      
+      console.log(`Starting NPI import for state: ${state || 'all'}, limit: ${limit}`);
+      
+      console.log('Calling NPI service with state:', state, 'limit:', limit);
+      const clinics = await npiService.fetchSpeechTherapyCenters(state, limit);
+      console.log('NPI service returned', clinics.length, 'clinics');
+      
+      let importedCount = 0;
+      let skippedCount = 0;
+      
+      for (const clinic of clinics) {
+        try {
+          // Check if clinic already exists by name and city
+          const existingClinics = await storage.searchClinics({
+            country: clinic.country
+          });
+          
+          const exists = existingClinics.some(existing => 
+            existing.name.toLowerCase() === clinic.name.toLowerCase() && 
+            existing.city.toLowerCase() === clinic.city.toLowerCase()
+          );
+          
+          if (!exists) {
+            // Get coordinates for the clinic
+            const [latitude, longitude] = await getCoordinates(clinic.city, clinic.country);
+            
+            const clinicWithCoords = {
+              ...clinic,
+              latitude,
+              longitude,
+              submittedBy: 'NPI Import Service',
+              verified: true // Auto-verify NPI imported clinics
+            };
+            
+            await storage.createClinic(clinicWithCoords);
+            importedCount++;
+          } else {
+            skippedCount++;
+          }
+        } catch (error) {
+          console.error(`Error importing clinic ${clinic.name}:`, error);
+          skippedCount++;
+        }
+      }
+      
+      res.json({
+        message: "NPI import completed",
+        imported: importedCount,
+        skipped: skippedCount,
+        total: clinics.length
+      });
+    } catch (error) {
+      console.error("Error importing from NPI:", error);
+      res.status(500).json({ message: "Failed to import from NPI" });
     }
   });
 

@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, MapPin, Eye, Clock, Users } from "lucide-react";
+import { CheckCircle, XCircle, MapPin, Eye, Clock, Users, Download } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
 interface AdminDashboardProps {
   submissions: any[];
@@ -10,8 +12,10 @@ interface AdminDashboardProps {
   isLoading: boolean;
   onApprove: (id: string) => void;
   onReject: (id: string, reason: string) => void;
+  onImportNPI: (state?: string, limit?: number) => void;
   isApproving: boolean;
   isRejecting: boolean;
+  isImporting: boolean;
 }
 
 export default function AdminDashboard({ 
@@ -20,9 +24,13 @@ export default function AdminDashboard({
   isLoading, 
   onApprove, 
   onReject,
+  onImportNPI,
   isApproving,
-  isRejecting 
+  isRejecting,
+  isImporting 
 }: AdminDashboardProps) {
+  const [selectedState, setSelectedState] = useState<string>("");
+  const [importLimit, setImportLimit] = useState<number>(25);
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -117,6 +125,87 @@ export default function AdminDashboard({
             ))}
           </div>
         )}
+      </div>
+
+      {/* NPI Import Section */}
+      <div className="mb-6">
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Download className="mr-2 h-5 w-5" />
+              Import Speech Therapy Centers
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Import real speech therapy centers from the National Provider Identifier (NPI) database. 
+              This will add verified speech-language pathologists to your map.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  State (Optional)
+                </label>
+                <Select value={selectedState} onValueChange={setSelectedState}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All states" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All states</SelectItem>
+                    <SelectItem value="CA">California</SelectItem>
+                    <SelectItem value="NY">New York</SelectItem>
+                    <SelectItem value="TX">Texas</SelectItem>
+                    <SelectItem value="FL">Florida</SelectItem>
+                    <SelectItem value="IL">Illinois</SelectItem>
+                    <SelectItem value="PA">Pennsylvania</SelectItem>
+                    <SelectItem value="OH">Ohio</SelectItem>
+                    <SelectItem value="GA">Georgia</SelectItem>
+                    <SelectItem value="NC">North Carolina</SelectItem>
+                    <SelectItem value="MI">Michigan</SelectItem>
+                    <SelectItem value="ON">Ontario</SelectItem>
+                    <SelectItem value="BC">British Columbia</SelectItem>
+                    <SelectItem value="QC">Quebec</SelectItem>
+                    <SelectItem value="AB">Alberta</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of Centers
+                </label>
+                <Select value={importLimit.toString()} onValueChange={(value) => setImportLimit(parseInt(value))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10 centers</SelectItem>
+                    <SelectItem value="25">25 centers</SelectItem>
+                    <SelectItem value="50">50 centers</SelectItem>
+                    <SelectItem value="100">100 centers</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button 
+                onClick={() => onImportNPI(selectedState || undefined, importLimit)}
+                disabled={isImporting}
+                className="w-full sm:w-auto"
+              >
+                {isImporting ? (
+                  <>
+                    <LoadingSpinner className="mr-2 h-4 w-4" />
+                    Importing...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Import Centers
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Analytics Summary */}
