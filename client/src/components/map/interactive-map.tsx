@@ -8,43 +8,29 @@ interface InteractiveMapProps {
   isLoading?: boolean;
 }
 
-declare global {
-  interface Window {
-    L: any;
-  }
-}
-
 export default function InteractiveMap({ clinics, onClinicClick, isLoading }: InteractiveMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const [mapInitialized, setMapInitialized] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
+  const leafletRef = useRef<any>(null);
 
+  // Initialize map once
   useEffect(() => {
-    let mounted = true;
+    let isMounted = true;
 
-    const initMap = async () => {
+    const loadMap = async () => {
+      if (!mapContainerRef.current) return;
+
       try {
-        if (!mapContainerRef.current || mapRef.current) return;
-
-        // Clean up any existing map
-        if (mapRef.current) {
-          mapRef.current.remove();
-          mapRef.current = null;
-        }
-
-        console.log('Starting map initialization...');
-        
-        // Dynamic import of Leaflet
-        const leaflet = await import('leaflet');
+        // Import Leaflet
+        const L = (await import('leaflet')).default;
         await import('leaflet/dist/leaflet.css');
         
-        if (!mounted || !mapContainerRef.current) return;
+        if (!isMounted) return;
         
-        const L = leaflet.default;
-        window.L = L; // Store globally for easier access
+        leafletRef.current = L;
 
-        // Fix marker icons
+        // Configure default markers
         delete (L.Icon.Default.prototype as any)._getIconUrl;
         L.Icon.Default.mergeOptions({
           iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -52,88 +38,83 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
         });
 
-        // Create map centered on North America
-        mapRef.current = L.map(mapContainerRef.current, {
-          center: [39.8283, -98.5795], // Center of USA
+        // Create map
+        const map = L.map(mapContainerRef.current, {
+          center: [39.8283, -98.5795],
           zoom: 4,
           minZoom: 2,
           maxZoom: 18
         });
 
-        // Add tile layer
+        // Add base layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
-        }).addTo(mapRef.current);
+        }).addTo(map);
 
-        // Wait for tiles to load
-        mapRef.current.whenReady(() => {
-          if (mounted) {
-            setMapInitialized(true);
-            console.log('Map initialized successfully');
+        mapRef.current = map;
+        
+        // Wait for map to be ready
+        map.whenReady(() => {
+          if (isMounted) {
+            setMapReady(true);
           }
         });
 
       } catch (error) {
-        console.error('Map failed to load:', error);
-        if (mounted) {
-          setMapInitialized(true);
+        console.error('Failed to load map:', error);
+        if (isMounted) {
+          setMapReady(true); // Show content even if map fails
         }
       }
     };
 
-    // Delay initialization to ensure DOM is ready
-    const timer = setTimeout(initMap, 100);
+    loadMap();
 
     return () => {
-      clearTimeout(timer);
-      mounted = false;
+      isMounted = false;
       if (mapRef.current) {
-        try {
-          mapRef.current.remove();
-        } catch (e) {
-          // Ignore cleanup errors
-        }
+        mapRef.current.remove();
         mapRef.current = null;
       }
-      markersRef.current = [];
-      setMapInitialized(false);
+      setMapReady(false);
     };
   }, []);
 
-  // Add markers to map
+  // Add markers when map is ready and clinics change
   useEffect(() => {
-    if (!mapInitialized || !mapRef.current || !window.L) return;
+    if (!mapReady || !mapRef.current || !leafletRef.current || !clinics.length) return;
+
+    const L = leafletRef.current;
+    const map = mapRef.current;
 
     // Clear existing markers
-    markersRef.current.forEach(marker => {
-      try {
-        mapRef.current.removeLayer(marker);
-      } catch (e) {
-        // Ignore removal errors
+    map.eachLayer((layer: any) => {
+      if (layer instanceof L.Marker) {
+        map.removeLayer(layer);
       }
     });
-    markersRef.current = [];
 
-    // Add new markers
+    // Add clinic markers
+    let markerCount = 0;
     clinics.forEach(clinic => {
       if (clinic.latitude && clinic.longitude) {
-        const marker = window.L.marker([clinic.latitude, clinic.longitude])
-          .addTo(mapRef.current)
+        const marker = L.marker([clinic.latitude, clinic.longitude])
           .bindPopup(`
-            <div class="p-2">
-              <h3 class="font-semibold text-sm">${clinic.name}</h3>
-              <p class="text-xs text-gray-600">${clinic.address}</p>
-              <p class="text-xs text-blue-600 mt-1">${clinic.services}</p>
+            <div style="padding: 8px; min-width: 200px;">
+              <h3 style="margin: 0 0 4px 0; font-weight: bold; font-size: 14px;">${clinic.name}</h3>
+              <p style="margin: 0 0 4px 0; color: #666; font-size: 12px;">${clinic.address}</p>
+              <p style="margin: 0; color: #0066cc; font-size: 12px;">${clinic.services || 'Speech therapy services'}</p>
             </div>
           `)
-          .on('click', () => onClinicClick(clinic));
-
-        markersRef.current.push(marker);
+          .on('click', () => onClinicClick(clinic))
+          .addTo(map);
+        
+        markerCount++;
       }
     });
 
-    console.log('Added', markersRef.current.length, 'markers to map');
-  }, [clinics, onClinicClick, mapInitialized]);
+    console.log(`Added ${markerCount} markers to map`);
+  }, [mapReady, clinics, onClinicClick]);
 
   if (isLoading) {
     return (
@@ -150,12 +131,15 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
     <div className="relative h-full w-full">
       <div 
         ref={mapContainerRef} 
-        className="h-full w-full bg-gray-100"
-        style={{ minHeight: '400px', height: '100%' }}
+        className="h-full w-full"
+        style={{ 
+          minHeight: '400px',
+          backgroundColor: '#f0f0f0'
+        }}
       />
       
-      {!mapInitialized && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-50">
+      {!mapReady && (
+        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
           <div className="text-center">
             <LoadingSpinner />
             <p className="mt-2 text-gray-600">Loading map...</p>
