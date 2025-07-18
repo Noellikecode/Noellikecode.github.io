@@ -10,27 +10,22 @@ interface InteractiveMapProps {
 
 export default function InteractiveMap({ clinics, onClinicClick, isLoading }: InteractiveMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const [mapReady, setMapReady] = useState(false);
+  const [mapInitialized, setMapInitialized] = useState(false);
   const mapRef = useRef<any>(null);
-  const leafletRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
 
-  // Initialize map once
   useEffect(() => {
-    let isMounted = true;
+    if (!mapContainerRef.current || mapRef.current) return;
 
-    const loadMap = async () => {
-      if (!mapContainerRef.current) return;
-
+    const initMap = async () => {
       try {
-        // Import Leaflet
-        const L = (await import('leaflet')).default;
+        // Dynamic import of Leaflet
+        const leaflet = await import('leaflet');
         await import('leaflet/dist/leaflet.css');
         
-        if (!isMounted) return;
-        
-        leafletRef.current = L;
+        const L = leaflet.default;
 
-        // Configure default markers
+        // Fix marker icons
         delete (L.Icon.Default.prototype as any)._getIconUrl;
         L.Icon.Default.mergeOptions({
           iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -38,83 +33,70 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
         });
 
-        // Create map
-        const map = L.map(mapContainerRef.current, {
-          center: [39.8283, -98.5795],
+        // Create map centered on North America
+        mapRef.current = L.map(mapContainerRef.current, {
+          center: [39.8283, -98.5795], // Center of USA
           zoom: 4,
           minZoom: 2,
           maxZoom: 18
         });
 
-        // Add base layer
+        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        }).addTo(mapRef.current);
 
-        mapRef.current = map;
-        
-        // Wait for map to be ready
-        map.whenReady(() => {
-          if (isMounted) {
-            setMapReady(true);
-          }
-        });
+        setMapInitialized(true);
+        console.log('Map initialized successfully');
 
       } catch (error) {
-        console.error('Failed to load map:', error);
-        if (isMounted) {
-          setMapReady(true); // Show content even if map fails
-        }
+        console.error('Map failed to load:', error);
+        setMapInitialized(true);
       }
     };
 
-    loadMap();
+    initMap();
 
     return () => {
-      isMounted = false;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
-      setMapReady(false);
+      markersRef.current = [];
     };
   }, []);
 
-  // Add markers when map is ready and clinics change
+  // Add markers to map
   useEffect(() => {
-    if (!mapReady || !mapRef.current || !leafletRef.current || !clinics.length) return;
+    if (!mapInitialized || !mapRef.current) return;
 
-    const L = leafletRef.current;
-    const map = mapRef.current;
+    const L = (window as any).L || require('leaflet');
 
     // Clear existing markers
-    map.eachLayer((layer: any) => {
-      if (layer instanceof L.Marker) {
-        map.removeLayer(layer);
-      }
+    markersRef.current.forEach(marker => {
+      mapRef.current.removeLayer(marker);
     });
+    markersRef.current = [];
 
-    // Add clinic markers
-    let markerCount = 0;
     clinics.forEach(clinic => {
       if (clinic.latitude && clinic.longitude) {
         const marker = L.marker([clinic.latitude, clinic.longitude])
+          .addTo(mapRef.current)
           .bindPopup(`
-            <div style="padding: 8px; min-width: 200px;">
-              <h3 style="margin: 0 0 4px 0; font-weight: bold; font-size: 14px;">${clinic.name}</h3>
-              <p style="margin: 0 0 4px 0; color: #666; font-size: 12px;">${clinic.address}</p>
-              <p style="margin: 0; color: #0066cc; font-size: 12px;">${clinic.services || 'Speech therapy services'}</p>
+            <div class="p-2">
+              <h3 class="font-semibold text-sm">${clinic.name}</h3>
+              <p class="text-xs text-gray-600">${clinic.address}</p>
+              <p class="text-xs text-blue-600 mt-1">${clinic.services}</p>
             </div>
           `)
-          .on('click', () => onClinicClick(clinic))
-          .addTo(map);
-        
-        markerCount++;
+          .on('click', () => onClinicClick(clinic));
+
+        markersRef.current.push(marker);
       }
     });
 
-    console.log(`Added ${markerCount} markers to map`);
-  }, [mapReady, clinics, onClinicClick]);
+    console.log('Added', markersRef.current.length, 'markers to map');
+  }, [clinics, onClinicClick, mapInitialized]);
 
   if (isLoading) {
     return (
@@ -128,24 +110,12 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   }
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full">
       <div 
         ref={mapContainerRef} 
-        className="h-full w-full"
-        style={{ 
-          minHeight: '400px',
-          backgroundColor: '#f0f0f0'
-        }}
+        className="h-full w-full bg-gray-100"
+        style={{ minHeight: '400px' }}
       />
-      
-      {!mapReady && (
-        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-          <div className="text-center">
-            <LoadingSpinner />
-            <p className="mt-2 text-gray-600">Loading map...</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
