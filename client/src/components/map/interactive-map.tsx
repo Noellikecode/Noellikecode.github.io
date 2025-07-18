@@ -8,6 +8,12 @@ interface InteractiveMapProps {
   isLoading?: boolean;
 }
 
+declare global {
+  interface Window {
+    L: any;
+  }
+}
+
 export default function InteractiveMap({ clinics, onClinicClick, isLoading }: InteractiveMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapInitialized, setMapInitialized] = useState(false);
@@ -15,21 +21,28 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
-
     let mounted = true;
 
     const initMap = async () => {
       try {
+        if (!mapContainerRef.current || mapRef.current) return;
+
+        // Clean up any existing map
+        if (mapRef.current) {
+          mapRef.current.remove();
+          mapRef.current = null;
+        }
+
         console.log('Starting map initialization...');
         
         // Dynamic import of Leaflet
         const leaflet = await import('leaflet');
         await import('leaflet/dist/leaflet.css');
         
-        if (!mounted) return;
+        if (!mounted || !mapContainerRef.current) return;
         
         const L = leaflet.default;
+        window.L = L; // Store globally for easier access
 
         // Fix marker icons
         delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -39,10 +52,6 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
         });
 
-        if (!mapContainerRef.current || !mounted) return;
-
-        console.log('Creating map with container:', mapContainerRef.current);
-        
         // Create map centered on North America
         mapRef.current = L.map(mapContainerRef.current, {
           center: [39.8283, -98.5795], // Center of USA
@@ -51,23 +60,18 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           maxZoom: 18
         });
 
-        console.log('Map created, adding tile layer...');
-
         // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
         }).addTo(mapRef.current);
 
-        console.log('Tile layer added, invalidating size...');
-
-        // Force map to invalidate size after initialization
-        setTimeout(() => {
-          if (mapRef.current && mounted) {
-            mapRef.current.invalidateSize();
+        // Wait for tiles to load
+        mapRef.current.whenReady(() => {
+          if (mounted) {
             setMapInitialized(true);
             console.log('Map initialized successfully');
           }
-        }, 100);
+        });
 
       } catch (error) {
         console.error('Map failed to load:', error);
@@ -77,12 +81,18 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
       }
     };
 
-    initMap();
+    // Delay initialization to ensure DOM is ready
+    const timer = setTimeout(initMap, 100);
 
     return () => {
+      clearTimeout(timer);
       mounted = false;
       if (mapRef.current) {
-        mapRef.current.remove();
+        try {
+          mapRef.current.remove();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
         mapRef.current = null;
       }
       markersRef.current = [];
@@ -90,51 +100,40 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
     };
   }, []);
 
-  // Separate effect for updating markers
+  // Add markers to map
   useEffect(() => {
-    if (!mapRef.current || !mapInitialized) return;
+    if (!mapInitialized || !mapRef.current || !window.L) return;
 
     // Clear existing markers
     markersRef.current.forEach(marker => {
-      mapRef.current.removeLayer(marker);
+      try {
+        mapRef.current.removeLayer(marker);
+      } catch (e) {
+        // Ignore removal errors
+      }
     });
     markersRef.current = [];
 
-    // Dynamic import for leaflet (we know it's already loaded)
-    import('leaflet').then(leaflet => {
-      const L = leaflet.default;
+    // Add new markers
+    clinics.forEach(clinic => {
+      if (clinic.latitude && clinic.longitude) {
+        const marker = window.L.marker([clinic.latitude, clinic.longitude])
+          .addTo(mapRef.current)
+          .bindPopup(`
+            <div class="p-2">
+              <h3 class="font-semibold text-sm">${clinic.name}</h3>
+              <p class="text-xs text-gray-600">${clinic.address}</p>
+              <p class="text-xs text-blue-600 mt-1">${clinic.services}</p>
+            </div>
+          `)
+          .on('click', () => onClinicClick(clinic));
 
-      // Add markers for clinics
-      clinics.forEach(clinic => {
-        if (clinic.latitude && clinic.longitude) {
-          const marker = L.marker([clinic.latitude, clinic.longitude])
-            .addTo(mapRef.current)
-            .bindPopup(`
-              <div style="padding: 8px; min-width: 200px;">
-                <h3 style="font-weight: bold; margin: 0 0 4px 0;">${clinic.name}</h3>
-                <p style="margin: 0; color: #666; font-size: 12px;">${clinic.city}, ${clinic.country}</p>
-                ${clinic.phone ? `<p style="margin: 4px 0; font-size: 12px;">${clinic.phone}</p>` : ''}
-                ${clinic.website ? `<p style="margin: 4px 0; font-size: 12px;"><a href="${clinic.website}" target="_blank" style="color: #0066cc;">Visit Website</a></p>` : ''}
-                ${clinic.services ? `<p style="margin: 4px 0; font-size: 11px;">Services: ${clinic.services.join(', ')}</p>` : ''}
-              </div>
-            `)
-            .on('click', () => onClinicClick(clinic));
-
-          markersRef.current.push(marker);
-        }
-      });
-
-      // Fit map to show all markers if we have clinics
-      if (markersRef.current.length > 0) {
-        const group = new L.featureGroup(markersRef.current);
-        mapRef.current.fitBounds(group.getBounds().pad(0.1));
+        markersRef.current.push(marker);
       }
-
-      console.log('Added', markersRef.current.length, 'markers to map');
     });
-  }, [clinics, onClinicClick, mapInitialized]);
 
-  // Markers will be added later
+    console.log('Added', markersRef.current.length, 'markers to map');
+  }, [clinics, onClinicClick, mapInitialized]);
 
   if (isLoading) {
     return (
@@ -146,8 +145,6 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
       </div>
     );
   }
-
-  console.log('Rendering map component, mapInitialized:', mapInitialized, 'isLoading:', isLoading);
 
   return (
     <div className="relative h-full w-full">
@@ -162,7 +159,6 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           <div className="text-center">
             <LoadingSpinner />
             <p className="mt-2 text-gray-600">Loading map...</p>
-            <p className="text-xs text-gray-400 mt-1">Status: {mapInitialized ? 'Ready' : 'Initializing'}</p>
           </div>
         </div>
       )}
