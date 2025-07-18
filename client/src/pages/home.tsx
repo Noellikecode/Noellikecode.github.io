@@ -112,10 +112,26 @@ export default function Home() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Services</SelectItem>
+                  <SelectItem value="speech-therapy">Speech Therapy</SelectItem>
+                  <SelectItem value="language-therapy">Language Therapy</SelectItem>
                   <SelectItem value="stuttering">Stuttering</SelectItem>
                   <SelectItem value="apraxia">Apraxia</SelectItem>
-                  <SelectItem value="voice">Voice Therapy</SelectItem>
-                  <SelectItem value="language">Language Therapy</SelectItem>
+                  <SelectItem value="voice-therapy">Voice Therapy</SelectItem>
+                  <SelectItem value="feeding-therapy">Feeding Therapy</SelectItem>
+                  <SelectItem value="social-skills">Social Skills</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">Region:</label>
+              <Select value={filters.country} onValueChange={(value) => handleFilterChange("country", value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Regions</SelectItem>
+                  <SelectItem value="United States">United States</SelectItem>
+                  <SelectItem value="Canada">Canada</SelectItem>
                 </SelectContent>
               </Select>
             </div>
