@@ -15,10 +15,19 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
+    if (!mapContainerRef.current) return;
+    
+    // Clean up any existing map
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
 
     const initMap = async () => {
       try {
+        // Add a small delay to ensure DOM is ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Dynamic import of Leaflet
         const leaflet = await import('leaflet');
         await import('leaflet/dist/leaflet.css');
@@ -46,23 +55,33 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           attribution: '© OpenStreetMap contributors'
         }).addTo(mapRef.current);
 
+        // Force map to invalidate size after a short delay
+        setTimeout(() => {
+          if (mapRef.current) {
+            mapRef.current.invalidateSize();
+          }
+        }, 200);
+
         setMapInitialized(true);
         console.log('Map initialized successfully');
 
       } catch (error) {
         console.error('Map failed to load:', error);
+        // Set initialized to true anyway to prevent endless loading
         setMapInitialized(true);
       }
     };
 
-    initMap();
+    const timer = setTimeout(initMap, 100);
 
     return () => {
+      clearTimeout(timer);
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
       markersRef.current = [];
+      setMapInitialized(false);
     };
   }, []);
 
@@ -114,8 +133,11 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
 
   if (isLoading) {
     return (
-      <div className="h-[calc(100vh-200px)] w-full bg-gray-100 flex items-center justify-center">
-        <LoadingSpinner />
+      <div className="h-full w-full bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner />
+          <p className="mt-2 text-gray-600">Loading clinics...</p>
+        </div>
       </div>
     );
   }
