@@ -35,18 +35,22 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
 
         if (!mapContainerRef.current) return;
 
-        // Create map
-        map = LeafletLib.map(mapContainerRef.current).setView([20, 0], 2);
+        // Create map with zoom constraints
+        map = LeafletLib.map(mapContainerRef.current, {
+          center: [20, 0],
+          zoom: 2,
+          minZoom: 2,
+          maxZoom: 18,
+          maxBounds: [[-85, -180], [85, 180]],
+          maxBoundsViscosity: 1.0
+        });
 
         // Add tile layer with world wrap prevention
         LeafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           noWrap: true,
-          bounds: [[-90, -180], [90, 180]]
+          bounds: [[-85, -180], [85, 180]]
         }).addTo(map);
-
-        // Set max bounds to prevent infinite scrolling
-        map.setMaxBounds([[-90, -180], [90, 180]]);
 
         setMapInitialized(true);
         console.log('Map loaded successfully');
@@ -78,10 +82,10 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   }
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       <div 
         ref={mapContainerRef} 
-        className="h-[calc(100vh-200px)] w-full bg-gray-100"
+        className="h-full w-full bg-gray-100"
         style={{ minHeight: '400px' }}
       />
       
