@@ -55,6 +55,12 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         // Fit the map to world bounds to minimize gray space
         map.fitWorld({ maxZoom: 3 });
         
+        // Force map to invalidate size and fit to container
+        setTimeout(() => {
+          map.invalidateSize();
+          map.fitWorld({ maxZoom: 3 });
+        }, 100);
+        
         setMapInitialized(true);
         console.log('Map loaded successfully');
 
@@ -66,8 +72,21 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
 
     const timer = setTimeout(initMap, 500);
 
+    // Handle window resize to ensure map fits properly on all screen sizes
+    const handleResize = () => {
+      if (map) {
+        setTimeout(() => {
+          map.invalidateSize();
+          map.fitWorld({ maxZoom: 3 });
+        }, 100);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
     return () => {
       clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
       if (map) {
         map.remove();
       }
