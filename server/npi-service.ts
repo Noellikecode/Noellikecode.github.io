@@ -80,7 +80,6 @@ export class NPIService {
       }
 
       const fullUrl = `${this.baseUrl}?${params}`;
-      console.log('Making NPI API request to:', fullUrl);
       
       const response = await fetch(fullUrl);
       if (!response.ok) {
@@ -91,7 +90,6 @@ export class NPIService {
       }
 
       const data = await response.json();
-      console.log('NPI API response structure:', JSON.stringify(data, null, 2));
       
       // Parse the NPI API response format: [count, codes, extraFields, displayStrings]
       if (!Array.isArray(data) || data.length < 4) {

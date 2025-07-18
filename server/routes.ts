@@ -176,9 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Starting NPI import for state: ${state || 'all'}, limit: ${limit}`);
       
-      console.log('Calling NPI service with state:', state, 'limit:', limit);
       const clinics = await npiService.fetchSpeechTherapyCenters(state, limit);
-      console.log('NPI service returned', clinics.length, 'clinics');
       
       let importedCount = 0;
       let skippedCount = 0;
