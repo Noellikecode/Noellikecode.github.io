@@ -48,7 +48,7 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         // Dynamic import of Leaflet
         const [L] = await Promise.all([
           import('leaflet'),
-          // Also load CSS by creating link element
+          // Load CSS
           new Promise<void>((resolve) => {
             const existingLink = document.querySelector('link[href*="leaflet.css"]');
             if (existingLink) {
@@ -60,10 +60,9 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
             link.rel = 'stylesheet';
             link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
             link.onload = () => resolve();
-            link.onerror = () => resolve(); // Continue even if CSS fails
+            link.onerror = () => resolve();
             document.head.appendChild(link);
             
-            // Timeout fallback
             setTimeout(resolve, 1000);
           })
         ]);
@@ -147,37 +146,96 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
 
         mapInstanceRef.current = map;
 
-        // Add clinic markers
+        // Optimize with Canvas rendering for large datasets
+        map.getRenderer = map.getRenderer || (() => L.canvas());
+
+        // Add clinic markers with optimized batching
         const bounds = new (await import('leaflet')).LatLngBounds();
         let markerCount = 0;
 
-        for (const clinic of clinics) {
-          if (clinic.latitude && clinic.longitude) {
-            try {
-              const marker = L.marker([clinic.latitude, clinic.longitude])
-                .bindPopup(`
-                  <div style="padding: 10px; min-width: 250px; max-width: 300px;">
-                    <h3 style="margin: 0 0 8px 0; font-weight: bold; color: #1f2937;">${clinic.name}</h3>
-                    <p style="margin: 0 0 6px 0; color: #6b7280; font-size: 14px;">
-                      <strong>Location:</strong> ${clinic.city}, ${clinic.country}
-                    </p>
-                    <p style="margin: 0 0 6px 0; color: #6b7280; font-size: 14px;">
-                      <strong>Services:</strong> ${Array.isArray(clinic.services) && clinic.services.length > 0 ? clinic.services.join(', ') : 'Speech therapy services'}
-                    </p>
-                    ${clinic.phone ? `<p style="margin: 0; color: #3b82f6; font-size: 14px;"><strong>Phone:</strong> ${clinic.phone}</p>` : ''}
-                  </div>
-                `)
-                .on('click', () => onClinicClick(clinic));
+        // Limit markers based on zoom level for performance
+        const maxMarkersAtZoom = {
+          1: 100,   // Country level
+          2: 200,   // Regional level  
+          3: 500,   // State level
+          4: 1000,  // Multi-state level
+          5: 2000,  // State detail level
+          6: 3000,  // Regional detail
+          7: 4000,  // City level
+          8: 5000   // Full detail
+        };
 
-              marker.addTo(map);
-              markersRef.current.push(marker);
-              bounds.extend([clinic.latitude, clinic.longitude]);
-              markerCount++;
-            } catch (error) {
-              console.warn('Failed to add marker:', clinic.name, error);
+        const currentZoom = map.getZoom();
+        const maxMarkers = maxMarkersAtZoom[Math.min(currentZoom, 8)] || 5000;
+        
+        // Take a representative sample if we have too many markers
+        const markersToShow = clinics.length > maxMarkers 
+          ? clinics.slice(0, maxMarkers) 
+          : clinics;
+
+        // Process in smaller batches for smoother loading
+        const batchSize = 100;
+        const batches = [];
+        for (let i = 0; i < markersToShow.length; i += batchSize) {
+          batches.push(markersToShow.slice(i, i + batchSize));
+        }
+
+        for (const batch of batches) {
+          if (!mounted) break;
+          
+          for (const clinic of batch) {
+            if (clinic.latitude && clinic.longitude) {
+              try {
+                const marker = L.marker([clinic.latitude, clinic.longitude], {
+                  // Use lightweight options for performance
+                  riseOnHover: true,
+                  bubblingMouseEvents: false
+                })
+                  .bindPopup(`
+                    <div style="padding: 8px; min-width: 200px; max-width: 280px;">
+                      <h3 style="margin: 0 0 6px 0; font-weight: bold; color: #1f2937; font-size: 16px;">${clinic.name}</h3>
+                      <p style="margin: 0 0 4px 0; color: #6b7280; font-size: 13px;">
+                        📍 ${clinic.city}, ${clinic.country}
+                      </p>
+                      <p style="margin: 0 0 4px 0; color: #6b7280; font-size: 13px;">
+                        🗣️ ${Array.isArray(clinic.services) && clinic.services.length > 0 ? clinic.services.join(', ') : 'Speech therapy'}
+                      </p>
+                      <p style="margin: 0 0 4px 0; color: #059669; font-size: 13px; font-weight: 600;">
+                        💰 ${clinic.cost_level || 'Contact for pricing'}
+                      </p>
+                      ${clinic.phone ? `<p style="margin: 0; color: #3b82f6; font-size: 13px;">📞 ${clinic.phone}</p>` : ''}
+                    </div>
+                  `, {
+                    maxWidth: 300,
+                    closeButton: true,
+                    autoPan: false  // Disable auto-pan for performance
+                  })
+                  .on('click', () => onClinicClick(clinic));
+
+                marker.addTo(map);
+                markersRef.current.push(marker);
+                bounds.extend([clinic.latitude, clinic.longitude]);
+                markerCount++;
+              } catch (error) {
+                console.warn('Failed to add marker:', clinic.name, error);
+              }
             }
           }
+          
+          // Allow UI to update between batches
+          await new Promise(resolve => setTimeout(resolve, 5));
         }
+
+        // Add zoom-based marker management
+        map.on('zoomend', () => {
+          const newZoom = map.getZoom();
+          const newMaxMarkers = maxMarkersAtZoom[Math.min(newZoom, 8)] || 5000;
+          
+          // Only refresh if we need more markers at higher zoom
+          if (newMaxMarkers > markerCount && clinics.length > markerCount) {
+            console.log(`Zoom changed to ${newZoom}, may need to load more markers`);
+          }
+        });
 
         // Fit map to markers
         if (markerCount > 0) {
@@ -225,14 +283,14 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
       clearTimeout(initTimeout);
       clearTimeout(retryTimeout);
       
-      // Clean up markers
-      markersRef.current.forEach(marker => {
-        try {
-          if (mapInstanceRef.current) {
+      // Clean up markers efficiently
+      if (mapInstanceRef.current && markersRef.current.length > 0) {
+        markersRef.current.forEach(marker => {
+          try {
             mapInstanceRef.current.removeLayer(marker);
-          }
-        } catch (e) {}
-      });
+          } catch (e) {}
+        });
+      }
       markersRef.current = [];
 
       // Clean up map

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,17 +46,23 @@ export default function Home() {
     apiRequest("POST", "/api/analytics/view").catch(console.error);
   }, []);
 
-  const handleFilterChange = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
 
-  const filteredClinics = clinics.filter((clinic: Clinic) => {
-    if (filters.costLevel !== "all" && clinic.costLevel !== filters.costLevel) return false;
-    if (filters.services !== "all" && !clinic.services.includes(filters.services)) return false;
-    if (filters.teletherapy && !clinic.teletherapy) return false;
-    if (filters.country !== "all" && clinic.country !== filters.country) return false;
-    return true;
-  });
+
+  // Memoized filtering for performance with large datasets
+  const filteredClinics = useMemo(() => {
+    return clinics.filter((clinic: Clinic) => {
+      if (filters.costLevel !== "all" && clinic.costLevel !== filters.costLevel) return false;
+      if (filters.services !== "all" && !clinic.services.includes(filters.services)) return false;
+      if (filters.teletherapy && !clinic.teletherapy) return false;
+      if (filters.country !== "all" && clinic.country !== filters.country) return false;
+      return true;
+    });
+  }, [clinics, filters]);
+
+  // Optimized filter change handler
+  const handleFilterChange = useCallback((key: string, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  }, []);
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
