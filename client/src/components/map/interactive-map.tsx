@@ -16,13 +16,16 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   const [mapError, setMapError] = useState(false);
   const initAttemptRef = useRef(0);
   const maxRetries = 3;
+  const initializingRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
     let retryTimeout: NodeJS.Timeout;
 
     const attemptMapInitialization = async () => {
-      if (!mapContainerRef.current || !mounted) return;
+      if (!mapContainerRef.current || !mounted || mapInstanceRef.current || initializingRef.current) return;
+      
+      initializingRef.current = true;
 
       initAttemptRef.current++;
       console.log(`Map initialization attempt ${initAttemptRef.current}/${maxRetries}`);
@@ -195,10 +198,12 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         console.log(`Map initialized successfully with ${markerCount} markers`);
         setMapReady(true);
         setMapError(false);
+        initializingRef.current = false;
 
       } catch (error) {
         console.error(`Map initialization attempt ${initAttemptRef.current} failed:`, error);
         
+        initializingRef.current = false;
         if (mounted) {
           if (initAttemptRef.current < maxRetries) {
             console.log(`Retrying in 2 seconds... (attempt ${initAttemptRef.current + 1}/${maxRetries})`);
