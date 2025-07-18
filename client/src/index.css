@@ -63,6 +63,7 @@
   height: 100%;
   width: 100%;
   background: #a7c8ed;
+  z-index: 1;
 }
 
 .leaflet-control-container .leaflet-routing-container-hide {
@@ -72,4 +73,17 @@
 .custom-marker {
   background: transparent !important;
   border: none !important;
+}
+
+/* Fix dropdown z-index issues over map */
+[data-radix-popper-content-wrapper] {
+  z-index: 1000 !important;
+}
+
+[data-radix-select-content] {
+  z-index: 1000 !important;
+}
+
+.relative .absolute {
+  z-index: 999 !important;
 }

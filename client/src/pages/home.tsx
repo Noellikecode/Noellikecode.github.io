@@ -61,7 +61,7 @@ export default function Home() {
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b flex-shrink-0">
+      <header className="bg-white shadow-sm border-b flex-shrink-0 relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
@@ -87,7 +87,7 @@ export default function Home() {
       </header>
 
       {/* Map Controls */}
-      <div className="bg-white border-b px-4 py-3 flex-shrink-0">
+      <div className="bg-white border-b px-4 py-3 flex-shrink-0 relative z-10">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
