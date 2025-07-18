@@ -8,6 +8,7 @@ import { Globe, Plus, Settings, MapPin, Users } from "lucide-react";
 import InteractiveMap from "@/components/map/interactive-map";
 import ClinicModal from "@/components/modals/clinic-modal";
 import SubmissionModal from "@/components/modals/submission-modal";
+import WelcomeModal from "@/components/modals/welcome-modal";
 import { Clinic } from "@/types/clinic";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -16,6 +17,8 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(true);
+  const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
   const [filters, setFilters] = useState({
     costLevel: "all",
     services: "all",
@@ -62,6 +65,12 @@ export default function Home() {
   // Optimized filter change handler
   const handleFilterChange = useCallback((key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  // Handle welcome modal filter application
+  const handleWelcomeFilters = useCallback((newFilters: any) => {
+    setFilters(newFilters);
+    setHasAppliedFilters(true);
   }, []);
 
   return (
@@ -153,11 +162,13 @@ export default function Home() {
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <span className="flex items-center">
               <MapPin className="text-primary mr-1 h-4 w-4" />
-              {filteredClinics.length === clinics.length 
-                ? `${filteredClinics.length} Total Centers` 
-                : `${filteredClinics.length} of ${clinics.length} Centers`}
+              {hasAppliedFilters 
+                ? (filteredClinics.length === clinics.length 
+                    ? `${filteredClinics.length} Total Centers` 
+                    : `${filteredClinics.length} of ${clinics.length} Centers`)
+                : "Apply filters to see centers"}
             </span>
-            {filteredClinics.length < clinics.length && (
+            {hasAppliedFilters && filteredClinics.length < clinics.length && (
               <span className="text-blue-600 text-xs bg-blue-50 px-2 py-1 rounded">
                 Filters Applied
               </span>
@@ -174,13 +185,20 @@ export default function Home() {
       <div className="flex-1 min-h-0">
         <InteractiveMap 
           clinics={clinics}
-          filteredClinics={filteredClinics} 
+          filteredClinics={hasAppliedFilters ? filteredClinics : []} 
           onClinicClick={setSelectedClinic}
           isLoading={isLoading}
         />
       </div>
 
       {/* Modals */}
+      <WelcomeModal 
+        isOpen={isWelcomeModalOpen}
+        onClose={() => setIsWelcomeModalOpen(false)}
+        onApplyFilters={handleWelcomeFilters}
+        totalClinics={clinics.length}
+      />
+      
       <ClinicModal 
         clinic={selectedClinic} 
         isOpen={!!selectedClinic}
