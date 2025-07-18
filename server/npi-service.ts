@@ -71,7 +71,7 @@ export class NPIService {
       const params = new URLSearchParams({
         terms: searchTerms,
         maxList: limit.toString(),
-        ef: 'NPI,name.full,addr_practice.city,addr_practice.state,addr_practice.line1,addr_practice.phone'
+        ef: 'NPI,name.full,addr_practice.city,addr_practice.state,addr_practice.line1,addr_practice.phone,endpoints'
       });
 
       // If state is specified, add it as a filter
@@ -113,6 +113,7 @@ export class NPIService {
         const stateCode = extraFields?.['addr_practice.state']?.[i];
         const address = extraFields?.['addr_practice.line1']?.[i];
         const phone = extraFields?.['addr_practice.phone']?.[i];
+        const endpoints = extraFields?.['endpoints']?.[i];
 
         // Skip if missing essential data
         if (!name || !city || !stateCode) {
@@ -132,7 +133,7 @@ export class NPIService {
           languages: 'English', // Default language
           teletherapy: false, // Default value
           phone: phone || undefined,
-          website: undefined, // NPI doesn't provide website info
+          website: endpoints ? this.extractWebsiteFromEndpoints(endpoints) : undefined,
           email: undefined, // NPI doesn't provide email info
           notes: address ? `NPI: ${npi}. Address: ${address}` : `NPI: ${npi}`,
           submitterEmail: 'npi-import@system.com',
@@ -145,6 +146,19 @@ export class NPIService {
     } catch (error) {
       console.error('Error fetching from NPI API:', error);
       throw error;
+    }
+  }
+
+  private extractWebsiteFromEndpoints(endpoints: string): string | undefined {
+    if (!endpoints) return undefined;
+    
+    try {
+      // NPI endpoints might contain URLs in various formats
+      const urlPattern = /(https?:\/\/[^\s,;]+)/i;
+      const match = endpoints.match(urlPattern);
+      return match ? match[1] : undefined;
+    } catch (error) {
+      return undefined;
     }
   }
 

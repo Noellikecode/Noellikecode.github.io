@@ -15,7 +15,7 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   const markersRef = useRef<any[]>([]);
 
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    if (!mapContainerRef.current || mapRef.current) return;
 
     const initMap = async () => {
       try {
@@ -46,33 +46,8 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
           attribution: '© OpenStreetMap contributors'
         }).addTo(mapRef.current);
 
-        // Add markers for clinics
-        clinics.forEach(clinic => {
-          if (clinic.latitude && clinic.longitude) {
-            const marker = L.marker([clinic.latitude, clinic.longitude])
-              .addTo(mapRef.current)
-              .bindPopup(`
-                <div style="padding: 8px; min-width: 200px;">
-                  <h3 style="font-weight: bold; margin: 0 0 4px 0;">${clinic.name}</h3>
-                  <p style="margin: 0; color: #666; font-size: 12px;">${clinic.city}, ${clinic.country}</p>
-                  ${clinic.phone ? `<p style="margin: 4px 0; font-size: 12px;">${clinic.phone}</p>` : ''}
-                  ${clinic.services ? `<p style="margin: 4px 0; font-size: 11px;">Services: ${clinic.services.join(', ')}</p>` : ''}
-                </div>
-              `)
-              .on('click', () => onClinicClick(clinic));
-
-            markersRef.current.push(marker);
-          }
-        });
-
-        // Fit map to show all markers if we have clinics
-        if (markersRef.current.length > 0) {
-          const group = new L.featureGroup(markersRef.current);
-          mapRef.current.fitBounds(group.getBounds().pad(0.1));
-        }
-
         setMapInitialized(true);
-        console.log('Map loaded successfully with', markersRef.current.length, 'markers');
+        console.log('Map initialized successfully');
 
       } catch (error) {
         console.error('Map failed to load:', error);
@@ -87,8 +62,53 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         mapRef.current.remove();
         mapRef.current = null;
       }
+      markersRef.current = [];
     };
-  }, [clinics, onClinicClick]);
+  }, []);
+
+  // Separate effect for updating markers
+  useEffect(() => {
+    if (!mapRef.current || !mapInitialized) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => {
+      mapRef.current.removeLayer(marker);
+    });
+    markersRef.current = [];
+
+    // Dynamic import for leaflet (we know it's already loaded)
+    import('leaflet').then(leaflet => {
+      const L = leaflet.default;
+
+      // Add markers for clinics
+      clinics.forEach(clinic => {
+        if (clinic.latitude && clinic.longitude) {
+          const marker = L.marker([clinic.latitude, clinic.longitude])
+            .addTo(mapRef.current)
+            .bindPopup(`
+              <div style="padding: 8px; min-width: 200px;">
+                <h3 style="font-weight: bold; margin: 0 0 4px 0;">${clinic.name}</h3>
+                <p style="margin: 0; color: #666; font-size: 12px;">${clinic.city}, ${clinic.country}</p>
+                ${clinic.phone ? `<p style="margin: 4px 0; font-size: 12px;">${clinic.phone}</p>` : ''}
+                ${clinic.website ? `<p style="margin: 4px 0; font-size: 12px;"><a href="${clinic.website}" target="_blank" style="color: #0066cc;">Visit Website</a></p>` : ''}
+                ${clinic.services ? `<p style="margin: 4px 0; font-size: 11px;">Services: ${clinic.services.join(', ')}</p>` : ''}
+              </div>
+            `)
+            .on('click', () => onClinicClick(clinic));
+
+          markersRef.current.push(marker);
+        }
+      });
+
+      // Fit map to show all markers if we have clinics
+      if (markersRef.current.length > 0) {
+        const group = new L.featureGroup(markersRef.current);
+        mapRef.current.fitBounds(group.getBounds().pad(0.1));
+      }
+
+      console.log('Added', markersRef.current.length, 'markers to map');
+    });
+  }, [clinics, onClinicClick, mapInitialized]);
 
   // Markers will be added later
 
@@ -105,7 +125,7 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
       <div 
         ref={mapContainerRef} 
         className="h-full w-full bg-gray-100"
-        style={{ minHeight: '400px' }}
+        style={{ height: '100vh', width: '100vw' }}
       />
       
       {!mapInitialized && (
