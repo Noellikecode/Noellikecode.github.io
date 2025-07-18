@@ -4,7 +4,7 @@
 
 A crowdsourced interactive mapping platform that helps people find speech therapy resources worldwide. The application displays clinics, programs, and teletherapy services on an interactive map, allowing users to discover and contribute information about speech therapy accessibility globally.
 
-**Current Status**: Successfully populated with 48 real speech therapy centers from the National Provider Identifier (NPI) database, covering major metropolitan areas across the United States including Colorado, Texas, New York, Maryland, California, Florida, Washington, Illinois, Georgia, and Arizona.
+**Current Status**: Successfully populated with 47 real speech therapy centers from the National Provider Identifier (NPI) database, covering major metropolitan areas across the United States including Colorado, Texas, New York, Maryland, California, Florida, Washington, Illinois, Georgia, and Arizona. Interactive Leaflet map is now fully functional with reliable initialization and all clinic markers displaying properly.
 
 ## User Preferences
 
