@@ -38,10 +38,15 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         // Create map
         map = LeafletLib.map(mapContainerRef.current).setView([20, 0], 2);
 
-        // Add tile layer
+        // Add tile layer with world wrap prevention
         LeafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
+          noWrap: true,
+          bounds: [[-90, -180], [90, 180]]
         }).addTo(map);
+
+        // Set max bounds to prevent infinite scrolling
+        map.setMaxBounds([[-90, -180], [90, 180]]);
 
         setMapInitialized(true);
         console.log('Map loaded successfully');
