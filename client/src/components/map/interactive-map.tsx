@@ -10,23 +10,235 @@ interface InteractiveMapProps {
 
 export default function InteractiveMap({ clinics, onClinicClick, isLoading }: InteractiveMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
   const [mapReady, setMapReady] = useState(false);
-  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
+  const [mapError, setMapError] = useState(false);
+  const initAttemptRef = useRef(0);
+  const maxRetries = 3;
 
   useEffect(() => {
-    // Set map ready immediately since we're using a pure HTML/CSS approach
-    setMapReady(true);
-  }, []);
+    let mounted = true;
+    let retryTimeout: NodeJS.Timeout;
 
-  // Group clinics by state/region for better organization
-  const clinicsByState = clinics.reduce((acc, clinic) => {
-    const state = clinic.city || clinic.country || 'Unknown';
-    if (!acc[state]) acc[state] = [];
-    acc[state].push(clinic);
-    return acc;
-  }, {} as Record<string, Clinic[]>);
+    const attemptMapInitialization = async () => {
+      if (!mapContainerRef.current || !mounted) return;
 
-  const states = Object.keys(clinicsByState).sort();
+      initAttemptRef.current++;
+      console.log(`Map initialization attempt ${initAttemptRef.current}/${maxRetries}`);
+
+      try {
+        // Clear any existing map
+        if (mapInstanceRef.current) {
+          try {
+            mapInstanceRef.current.remove();
+          } catch (e) {}
+          mapInstanceRef.current = null;
+        }
+
+        // Ensure container is ready
+        const container = mapContainerRef.current;
+        if (!container.offsetWidth || !container.offsetHeight) {
+          throw new Error('Container not ready');
+        }
+
+        // Dynamic import of Leaflet
+        const [L] = await Promise.all([
+          import('leaflet'),
+          // Also load CSS by creating link element
+          new Promise<void>((resolve) => {
+            const existingLink = document.querySelector('link[href*="leaflet.css"]');
+            if (existingLink) {
+              resolve();
+              return;
+            }
+            
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            link.onload = () => resolve();
+            link.onerror = () => resolve(); // Continue even if CSS fails
+            document.head.appendChild(link);
+            
+            // Timeout fallback
+            setTimeout(resolve, 1000);
+          })
+        ]);
+
+        if (!mounted) return;
+
+        // Configure Leaflet marker icons
+        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        });
+
+        // Create map with timeout protection
+        const mapCreationPromise = new Promise<any>((resolve, reject) => {
+          try {
+            const map = L.map(container, {
+              center: [39.8283, -98.5795], // Center of USA
+              zoom: 4,
+              zoomControl: true,
+              scrollWheelZoom: true,
+              doubleClickZoom: true,
+              dragging: true,
+              attributionControl: true,
+              preferCanvas: false
+            });
+
+            // Add tile layer with error handling
+            const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '© OpenStreetMap contributors',
+              maxZoom: 18,
+              minZoom: 2,
+              timeout: 10000
+            });
+
+            let tilesLoaded = false;
+            let tilesError = false;
+
+            tileLayer.on('load', () => {
+              tilesLoaded = true;
+              console.log('Map tiles loaded successfully');
+            });
+
+            tileLayer.on('tileerror', () => {
+              tilesError = true;
+              console.warn('Some tiles failed to load');
+            });
+
+            tileLayer.addTo(map);
+
+            // Give tiles time to load, then resolve
+            setTimeout(() => {
+              if (!tilesError || tilesLoaded) {
+                resolve(map);
+              } else {
+                console.log('Tiles had issues but proceeding anyway');
+                resolve(map);
+              }
+            }, 2000);
+
+            // Immediate fallback if tiles load quickly
+            tileLayer.on('load', () => {
+              setTimeout(() => resolve(map), 100);
+            });
+
+          } catch (err) {
+            reject(err);
+          }
+        });
+
+        // Wait for map creation with timeout
+        const map = await Promise.race([
+          mapCreationPromise,
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Map creation timeout')), 10000)
+          )
+        ]) as any;
+
+        if (!mounted) return;
+
+        mapInstanceRef.current = map;
+
+        // Add clinic markers
+        const bounds = new (await import('leaflet')).LatLngBounds();
+        let markerCount = 0;
+
+        for (const clinic of clinics) {
+          if (clinic.latitude && clinic.longitude) {
+            try {
+              const marker = L.marker([clinic.latitude, clinic.longitude])
+                .bindPopup(`
+                  <div style="padding: 10px; min-width: 250px; max-width: 300px;">
+                    <h3 style="margin: 0 0 8px 0; font-weight: bold; color: #1f2937;">${clinic.name}</h3>
+                    <p style="margin: 0 0 6px 0; color: #6b7280; font-size: 14px;">
+                      <strong>Location:</strong> ${clinic.city}, ${clinic.country}
+                    </p>
+                    <p style="margin: 0 0 6px 0; color: #6b7280; font-size: 14px;">
+                      <strong>Services:</strong> ${Array.isArray(clinic.services) && clinic.services.length > 0 ? clinic.services.join(', ') : 'Speech therapy services'}
+                    </p>
+                    ${clinic.phone ? `<p style="margin: 0; color: #3b82f6; font-size: 14px;"><strong>Phone:</strong> ${clinic.phone}</p>` : ''}
+                  </div>
+                `)
+                .on('click', () => onClinicClick(clinic));
+
+              marker.addTo(map);
+              markersRef.current.push(marker);
+              bounds.extend([clinic.latitude, clinic.longitude]);
+              markerCount++;
+            } catch (error) {
+              console.warn('Failed to add marker:', clinic.name, error);
+            }
+          }
+        }
+
+        // Fit map to markers
+        if (markerCount > 0) {
+          try {
+            map.fitBounds(bounds, { padding: [20, 20] });
+          } catch (e) {
+            console.warn('Failed to fit bounds, using default view');
+          }
+        }
+
+        // Ensure map is properly sized
+        setTimeout(() => {
+          if (mounted && map) {
+            map.invalidateSize();
+          }
+        }, 100);
+
+        console.log(`Map initialized successfully with ${markerCount} markers`);
+        setMapReady(true);
+        setMapError(false);
+
+      } catch (error) {
+        console.error(`Map initialization attempt ${initAttemptRef.current} failed:`, error);
+        
+        if (mounted) {
+          if (initAttemptRef.current < maxRetries) {
+            console.log(`Retrying in 2 seconds... (attempt ${initAttemptRef.current + 1}/${maxRetries})`);
+            retryTimeout = setTimeout(attemptMapInitialization, 2000);
+          } else {
+            console.error('All map initialization attempts failed');
+            setMapError(true);
+            setMapReady(true);
+          }
+        }
+      }
+    };
+
+    // Start initialization with a small delay to ensure DOM is ready
+    const initTimeout = setTimeout(attemptMapInitialization, 100);
+
+    return () => {
+      mounted = false;
+      clearTimeout(initTimeout);
+      clearTimeout(retryTimeout);
+      
+      // Clean up markers
+      markersRef.current.forEach(marker => {
+        try {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.removeLayer(marker);
+          }
+        } catch (e) {}
+      });
+      markersRef.current = [];
+
+      // Clean up map
+      if (mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current.remove();
+        } catch (e) {}
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [clinics, onClinicClick]);
 
   if (isLoading) {
     return (
@@ -40,127 +252,58 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
-      {/* Map Background */}
+    <div className="relative h-full w-full">
       <div 
-        ref={mapContainerRef}
-        className="h-full w-full bg-gradient-to-br from-blue-200 via-green-100 to-green-200"
-        style={{
-          backgroundImage: `
-            radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.3) 0%, transparent 50%)
-          `
+        ref={mapContainerRef} 
+        className="h-full w-full"
+        style={{ 
+          minHeight: '400px',
+          backgroundColor: '#f0f8ff'
         }}
-      >
-        {/* Title Header */}
-        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg z-10 max-w-sm">
-          <div className="text-lg font-bold text-gray-800">🗺️ Speech Therapy Centers</div>
-          <div className="text-sm text-gray-600">{clinics.length} locations across {states.length} states</div>
-          <div className="text-xs text-gray-500 mt-1">Select a state below to view centers</div>
-        </div>
-
-        {/* States Grid */}
-        <div className="absolute top-20 left-4 right-4 bottom-4 overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {states.map(state => (
-              <div
-                key={state}
-                className="bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-md hover:shadow-lg transition-all cursor-pointer border border-gray-200"
-                onClick={() => setSelectedClinic(null)}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-800 text-sm">{state}</h3>
-                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
-                    {clinicsByState[state].length}
-                  </span>
-                </div>
-                
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {clinicsByState[state].map(clinic => (
-                    <div
-                      key={clinic.id}
-                      className={`p-2 rounded border transition-all cursor-pointer text-xs ${
-                        selectedClinic?.id === clinic.id
-                          ? 'bg-blue-50 border-blue-300'
-                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedClinic(clinic);
-                        onClinicClick(clinic);
-                      }}
-                    >
-                      <div className="font-medium text-gray-800 line-clamp-1">{clinic.name}</div>
-                      <div className="text-gray-600 line-clamp-1">{clinic.city}, {clinic.country}</div>
-                      {clinic.phone && (
-                        <div className="text-blue-600 mt-1">{clinic.phone}</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+      />
+      
+      {!mapReady && (
+        <div className="absolute inset-0 bg-blue-50 flex items-center justify-center z-10">
+          <div className="text-center">
+            <LoadingSpinner />
+            <p className="mt-2 text-gray-700">Loading interactive map...</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Attempt {Math.min(initAttemptRef.current + 1, maxRetries)} of {maxRetries}
+            </p>
           </div>
         </div>
+      )}
 
-        {/* Selected Clinic Detail Panel */}
-        {selectedClinic && (
-          <div className="absolute top-4 right-4 bg-white rounded-lg p-4 shadow-xl z-20 max-w-md border border-gray-300">
-            <div className="flex items-start justify-between mb-3">
-              <h3 className="font-bold text-gray-800 text-lg">{selectedClinic.name}</h3>
-              <button
-                onClick={() => setSelectedClinic(null)}
-                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium text-gray-700">📍 Location:</span>
-                <p className="text-gray-600 mt-1">{selectedClinic.city}, {selectedClinic.country}</p>
-              </div>
-              
-              {selectedClinic.phone && (
-                <div>
-                  <span className="font-medium text-gray-700">📞 Phone:</span>
-                  <p className="text-blue-600 mt-1">{selectedClinic.phone}</p>
-                </div>
-              )}
-              
-              <div>
-                <span className="font-medium text-gray-700">🏥 Services:</span>
-                <p className="text-gray-600 mt-1">
-                  {Array.isArray(selectedClinic.services) && selectedClinic.services.length > 0
-                    ? selectedClinic.services.join(', ')
-                    : 'Speech therapy services'}
-                </p>
-              </div>
-              
-              {selectedClinic.latitude && selectedClinic.longitude && (
-                <div>
-                  <span className="font-medium text-gray-700">🌍 Coordinates:</span>
-                  <p className="text-gray-600 mt-1 font-mono text-xs">
-                    {selectedClinic.latitude.toFixed(4)}, {selectedClinic.longitude.toFixed(4)}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Footer Stats */}
-        <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-          <div className="text-xs text-gray-600">
-            Real data from National Provider Identifier (NPI) database
-          </div>
-          <div className="text-xs text-gray-500">
-            Updated with verified speech therapy centers
+      {mapError && (
+        <div className="absolute inset-0 bg-red-50 flex items-center justify-center z-10">
+          <div className="text-center p-6">
+            <div className="text-red-600 mb-2 text-lg">Map Loading Failed</div>
+            <p className="text-gray-700 mb-4">
+              Unable to load the interactive map after {maxRetries} attempts.
+            </p>
+            <button 
+              onClick={() => {
+                setMapError(false);
+                setMapReady(false);
+                initAttemptRef.current = 0;
+                // Trigger re-initialization
+                setTimeout(() => window.location.reload(), 100);
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Retry
+            </button>
           </div>
         </div>
-      </div>
+      )}
+
+      {mapReady && !mapError && (
+        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-10">
+          <div className="text-sm font-semibold text-gray-800">Interactive Map</div>
+          <div className="text-xs text-gray-600">{clinics.length} speech therapy centers</div>
+          <div className="text-xs text-gray-500 mt-1">Click markers for details</div>
+        </div>
+      )}
     </div>
   );
 }
