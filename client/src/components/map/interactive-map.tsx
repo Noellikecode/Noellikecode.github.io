@@ -88,7 +88,13 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
               doubleClickZoom: true,
               dragging: true,
               attributionControl: true,
-              preferCanvas: false
+              preferCanvas: true, // Use canvas for smoother performance
+              zoomAnimation: true,
+              fadeAnimation: true,
+              markerZoomAnimation: true,
+              zoomSnap: 0.25, // Smoother zoom increments
+              wheelPxPerZoomLevel: 120, // Smoother wheel zoom
+              zoomDelta: 0.5 // Finer zoom control
             });
 
             // Add tile layer with error handling
@@ -153,31 +159,21 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
         const bounds = new (await import('leaflet')).LatLngBounds();
         let markerCount = 0;
 
-        // Limit markers based on zoom level for performance
-        const maxMarkersAtZoom = {
-          1: 100,   // Country level
-          2: 200,   // Regional level  
-          3: 500,   // State level
-          4: 1000,  // Multi-state level
-          5: 2000,  // State detail level
-          6: 3000,  // Regional detail
-          7: 4000,  // City level
-          8: 5000   // Full detail
+        // Progressive marker loading system - show ALL markers but load smoothly
+        const markersToShow = clinics; // Show ALL 5,036+ markers
+        
+        // Dynamic batch sizing based on zoom level for smoothness
+        const getBatchSize = (zoom: number) => {
+          if (zoom <= 3) return 50;   // Smaller batches at low zoom for responsiveness
+          if (zoom <= 5) return 100;  // Medium batches at medium zoom
+          return 200;                 // Larger batches at high zoom for speed
         };
 
-        const currentZoom = map.getZoom();
-        const maxMarkers = maxMarkersAtZoom[Math.min(currentZoom, 8)] || 5000;
-        
-        // Take a representative sample if we have too many markers
-        const markersToShow = clinics.length > maxMarkers 
-          ? clinics.slice(0, maxMarkers) 
-          : clinics;
-
-        // Process in smaller batches for smoother loading
-        const batchSize = 100;
+        // Process with dynamic batch sizing for optimal performance
+        const currentBatchSize = getBatchSize(map.getZoom());
         const batches = [];
-        for (let i = 0; i < markersToShow.length; i += batchSize) {
-          batches.push(markersToShow.slice(i, i + batchSize));
+        for (let i = 0; i < markersToShow.length; i += currentBatchSize) {
+          batches.push(markersToShow.slice(i, i + currentBatchSize));
         }
 
         for (const batch of batches) {
@@ -222,19 +218,27 @@ export default function InteractiveMap({ clinics, onClinicClick, isLoading }: In
             }
           }
           
-          // Allow UI to update between batches
-          await new Promise(resolve => setTimeout(resolve, 5));
+          // Dynamic delay based on batch size to maintain smoothness
+          const delay = currentBatchSize > 100 ? 10 : 5;
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
 
-        // Add zoom-based marker management
+        // Smooth zoom-based marker management with debouncing
+        let zoomTimeout: NodeJS.Timeout;
+        map.on('zoomstart', () => {
+          // Hide some UI elements during zoom for smoothness
+          container.style.pointerEvents = 'none';
+        });
+
         map.on('zoomend', () => {
-          const newZoom = map.getZoom();
-          const newMaxMarkers = maxMarkersAtZoom[Math.min(newZoom, 8)] || 5000;
+          container.style.pointerEvents = 'auto';
           
-          // Only refresh if we need more markers at higher zoom
-          if (newMaxMarkers > markerCount && clinics.length > markerCount) {
-            console.log(`Zoom changed to ${newZoom}, may need to load more markers`);
-          }
+          // Debounce for smooth zoom interactions
+          clearTimeout(zoomTimeout);
+          zoomTimeout = setTimeout(() => {
+            const newZoom = map.getZoom();
+            console.log(`Zoom ${newZoom}: ${markerCount} of ${clinics.length} markers loaded`);
+          }, 150); // Reduced debounce for more responsive feedback
         });
 
         // Fit map to markers
