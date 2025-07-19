@@ -4,7 +4,7 @@
 
 A crowdsourced interactive mapping platform that helps people find speech therapy resources worldwide. The application displays clinics, programs, and teletherapy services on an interactive map, allowing users to discover and contribute information about speech therapy accessibility globally.
 
-**Current Status**: Successfully populated with 4,993 real speech therapy centers from the National Provider Identifier (NPI) database with authentic geocoded coordinates. Complete dataset rebuild completed (Jan 2025) using Nominatim geocoding API with actual clinic addresses, achieving 99.98% coordinate accuracy. All clinics now properly placed in their correct states with zero ocean markers. Features filter-first user experience with welcome modal, state-based filtering with automatic zoom functionality. Interactive Leaflet map with complete filtering capabilities by cost level, services, region, state, and teletherapy availability.
+**Current Status**: Successfully populated with 4,993 real speech therapy centers from the National Provider Identifier (NPI) database with state-validated geocoded coordinates. Complete coordinate accuracy fix implemented (Jan 2025) ensuring unique cities are placed in their correct states. Eliminated misplacements where California cities appeared in other states, Texas cities appeared elsewhere, etc. Features filter-first user experience with welcome modal, state-based filtering with automatic zoom functionality. Interactive Leaflet map with complete filtering capabilities by cost level, services, region, state, and teletherapy availability.
 
 ## User Preferences
 
