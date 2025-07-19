@@ -223,7 +223,7 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
                         🗣️ ${Array.isArray(clinic.services) && clinic.services.length > 0 ? clinic.services.join(', ') : 'Speech therapy'}
                       </p>
                       <p style="margin: 0 0 4px 0; color: #059669; font-size: 13px; font-weight: 600;">
-                        💰 ${clinic.cost_level || 'Contact for pricing'}
+                        💰 ${(clinic as any).costLevel || 'Contact for pricing'}
                       </p>
                       ${clinic.phone ? `<p style="margin: 0; color: #3b82f6; font-size: 13px;">📞 ${clinic.phone}</p>` : ''}
                     </div>
@@ -363,6 +363,8 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
       </div>
     );
   }
+
+
 
   // Show empty state when no filters applied
   if (filteredClinics.length === 0) {

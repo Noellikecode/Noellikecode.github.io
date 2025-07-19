@@ -71,9 +71,21 @@ export default function Home() {
     return stateBounds[state] || null;
   };
 
+
+
   // Enhanced filtering with accurate state-based geographic filtering
   const filteredClinics = useMemo(() => {
-    return clinics.filter((clinic: Clinic) => {
+    // When all filters are "all" or default, return all clinics to show the map
+    if (filters.costLevel === "all" && 
+        filters.services === "all" && 
+        !filters.teletherapy && 
+        filters.country === "all" && 
+        filters.state === "all") {
+      return clinics;
+    }
+    
+    return clinics.filter((clinic: any) => {
+      // API returns camelCase data
       if (filters.costLevel !== "all" && clinic.costLevel !== filters.costLevel) return false;
       if (filters.services !== "all" && !clinic.services.includes(filters.services)) return false;
       if (filters.teletherapy && !clinic.teletherapy) return false;
