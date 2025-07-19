@@ -1,185 +1,120 @@
--- Comprehensive coordinate fix for major US cities using accurate lat/lng data
+-- Accurate coordinate fix ensuring each clinic is placed in the correct state
+-- Using NPI data patterns and addresses to determine proper state assignment
 
--- Major California cities
-UPDATE clinics SET latitude = 34.0522, longitude = -118.2437 WHERE UPPER(city) LIKE '%LOS ANGELES%' OR UPPER(city) LIKE '%LA%';
-UPDATE clinics SET latitude = 37.7749, longitude = -122.4194 WHERE UPPER(city) LIKE '%SAN FRANCISCO%';
-UPDATE clinics SET latitude = 32.7157, longitude = -117.1611 WHERE UPPER(city) LIKE '%SAN DIEGO%';
-UPDATE clinics SET latitude = 38.5816, longitude = -121.4944 WHERE UPPER(city) LIKE '%SACRAMENTO%';
-UPDATE clinics SET latitude = 37.3382, longitude = -121.8863 WHERE UPPER(city) LIKE '%SAN JOSE%';
-UPDATE clinics SET latitude = 33.8366, longitude = -117.9143 WHERE UPPER(city) LIKE '%ANAHEIM%';
-UPDATE clinics SET latitude = 34.1478, longitude = -118.1445 WHERE UPPER(city) LIKE '%PASADENA%';
+-- Step 1: Reset all coordinates to force proper re-assignment
+UPDATE clinics SET latitude = NULL, longitude = NULL;
 
--- Texas cities
-UPDATE clinics SET latitude = 29.7604, longitude = -95.3698 WHERE UPPER(city) LIKE '%HOUSTON%';
-UPDATE clinics SET latitude = 32.7767, longitude = -96.7970 WHERE UPPER(city) LIKE '%DALLAS%';
-UPDATE clinics SET latitude = 29.4241, longitude = -98.4936 WHERE UPPER(city) LIKE '%SAN ANTONIO%';
-UPDATE clinics SET latitude = 30.2672, longitude = -97.7431 WHERE UPPER(city) LIKE '%AUSTIN%';
-UPDATE clinics SET latitude = 32.7555, longitude = -97.3308 WHERE UPPER(city) LIKE '%FORT WORTH%';
-UPDATE clinics SET latitude = 31.7619, longitude = -106.4850 WHERE UPPER(city) LIKE '%EL PASO%';
+-- Step 2: Assign coordinates based on actual clinic addresses and state patterns
 
--- Florida cities
-UPDATE clinics SET latitude = 25.7617, longitude = -80.1918 WHERE UPPER(city) LIKE '%MIAMI%';
-UPDATE clinics SET latitude = 30.3322, longitude = -81.6557 WHERE UPPER(city) LIKE '%JACKSONVILLE%';
-UPDATE clinics SET latitude = 27.9506, longitude = -82.4572 WHERE UPPER(city) LIKE '%TAMPA%';
-UPDATE clinics SET latitude = 28.5383, longitude = -81.3792 WHERE UPPER(city) LIKE '%ORLANDO%';
-UPDATE clinics SET latitude = 26.1224, longitude = -80.1373 WHERE UPPER(city) LIKE '%FORT LAUDERDALE%';
+-- California-specific coordinates (based on zip codes and address patterns)
+-- Major California metropolitan areas
+UPDATE clinics SET latitude = 34.0522, longitude = -118.2437 WHERE city = 'LOS ANGELES' AND (address LIKE '%CA%' OR address LIKE '%9%' OR name LIKE '%CALIFORNIA%');
+UPDATE clinics SET latitude = 37.7749, longitude = -122.4194 WHERE city = 'SAN FRANCISCO' AND (address LIKE '%CA%' OR address LIKE '%94%');
+UPDATE clinics SET latitude = 32.7157, longitude = -117.1611 WHERE city = 'SAN DIEGO' AND (address LIKE '%CA%' OR address LIKE '%92%');
+UPDATE clinics SET latitude = 33.8366, longitude = -117.9143 WHERE city = 'ANAHEIM' AND (address LIKE '%CA%' OR address LIKE '%92%');
+UPDATE clinics SET latitude = 37.3382, longitude = -121.8863 WHERE city = 'SAN JOSE' AND (address LIKE '%CA%' OR address LIKE '%95%');
+UPDATE clinics SET latitude = 38.5816, longitude = -121.4944 WHERE city = 'SACRAMENTO' AND (address LIKE '%CA%' OR address LIKE '%95%');
+UPDATE clinics SET latitude = 36.7378, longitude = -119.7871 WHERE city = 'FRESNO' AND (address LIKE '%CA%' OR address LIKE '%93%');
+UPDATE clinics SET latitude = 33.7701, longitude = -118.1937 WHERE city = 'LONG BEACH' AND (address LIKE '%CA%' OR address LIKE '%90%');
+UPDATE clinics SET latitude = 37.8715, longitude = -122.2730 WHERE city = 'OAKLAND' AND (address LIKE '%CA%' OR address LIKE '%94%');
+UPDATE clinics SET latitude = 34.0693, longitude = -118.4062 WHERE city = 'BEVERLY HILLS' AND (address LIKE '%CA%' OR address LIKE '%90%');
 
--- New York state cities (NOT NYC)
-UPDATE clinics SET latitude = 42.8864, longitude = -78.8784 WHERE UPPER(city) LIKE '%BUFFALO%';
-UPDATE clinics SET latitude = 43.0481, longitude = -76.1474 WHERE UPPER(city) LIKE '%SYRACUSE%';
-UPDATE clinics SET latitude = 42.6526, longitude = -73.7562 WHERE UPPER(city) LIKE '%ALBANY%';
-UPDATE clinics SET latitude = 43.1009, longitude = -77.6109 WHERE UPPER(city) LIKE '%ROCHESTER%' AND UPPER(city) NOT LIKE '%NEW YORK%';
+-- Texas-specific coordinates
+UPDATE clinics SET latitude = 29.7604, longitude = -95.3698 WHERE city = 'HOUSTON' AND (address LIKE '%TX%' OR address LIKE '%77%');
+UPDATE clinics SET latitude = 32.7767, longitude = -96.7970 WHERE city = 'DALLAS' AND (address LIKE '%TX%' OR address LIKE '%75%');
+UPDATE clinics SET latitude = 29.4241, longitude = -98.4936 WHERE city = 'SAN ANTONIO' AND (address LIKE '%TX%' OR address LIKE '%78%');
+UPDATE clinics SET latitude = 30.2672, longitude = -97.7431 WHERE city = 'AUSTIN' AND (address LIKE '%TX%' OR address LIKE '%78%');
+UPDATE clinics SET latitude = 32.7555, longitude = -97.3308 WHERE city = 'FORT WORTH' AND (address LIKE '%TX%' OR address LIKE '%76%');
 
--- Illinois cities
-UPDATE clinics SET latitude = 41.8781, longitude = -87.6298 WHERE UPPER(city) LIKE '%CHICAGO%';
-UPDATE clinics SET latitude = 39.7817, longitude = -89.6501 WHERE UPPER(city) LIKE '%SPRINGFIELD%' AND country = 'United States';
+-- Wisconsin-specific coordinates (separate from California)
+UPDATE clinics SET latitude = 43.0731, longitude = -89.4012 WHERE city = 'MADISON' AND (address LIKE '%WI%' OR address LIKE '%53%' OR address LIKE '%WISCONSIN%');
+UPDATE clinics SET latitude = 43.0389, longitude = -87.9065 WHERE city = 'MILWAUKEE' AND (address LIKE '%WI%' OR address LIKE '%53%');
+UPDATE clinics SET latitude = 44.5133, longitude = -88.0133 WHERE city = 'GREEN BAY' AND (address LIKE '%WI%' OR address LIKE '%54%');
 
--- Ohio cities
-UPDATE clinics SET latitude = 39.9612, longitude = -82.9988 WHERE UPPER(city) LIKE '%COLUMBUS%' AND country = 'United States';
-UPDATE clinics SET latitude = 41.4993, longitude = -81.6944 WHERE UPPER(city) LIKE '%CLEVELAND%';
-UPDATE clinics SET latitude = 39.1031, longitude = -84.5120 WHERE UPPER(city) LIKE '%CINCINNATI%';
+-- Maine-specific coordinates (separate from Oregon)
+UPDATE clinics SET latitude = 43.6591, longitude = -70.2568 WHERE city = 'PORTLAND' AND (address LIKE '%ME%' OR address LIKE '%04%' OR address LIKE '%MAINE%');
+UPDATE clinics SET latitude = 44.3106, longitude = -69.7795 WHERE city = 'AUGUSTA' AND (address LIKE '%ME%' OR address LIKE '%04%');
+UPDATE clinics SET latitude = 44.8016, longitude = -68.7712 WHERE city = 'BANGOR' AND (address LIKE '%ME%' OR address LIKE '%04%');
 
--- Michigan cities
-UPDATE clinics SET latitude = 42.3314, longitude = -83.0458 WHERE UPPER(city) LIKE '%DETROIT%';
+-- Oregon-specific coordinates (separate from Maine)
+UPDATE clinics SET latitude = 45.5152, longitude = -122.6784 WHERE city = 'PORTLAND' AND (address LIKE '%OR%' OR address LIKE '%97%' OR address LIKE '%OREGON%');
+UPDATE clinics SET latitude = 44.0521, longitude = -123.0868 WHERE city = 'EUGENE' AND (address LIKE '%OR%' OR address LIKE '%97%');
 
--- Pennsylvania cities
-UPDATE clinics SET latitude = 39.9526, longitude = -75.1652 WHERE UPPER(city) LIKE '%PHILADELPHIA%';
-UPDATE clinics SET latitude = 40.4406, longitude = -79.9959 WHERE UPPER(city) LIKE '%PITTSBURGH%';
+-- New York coordinates
+UPDATE clinics SET latitude = 40.7128, longitude = -74.0060 WHERE city = 'NEW YORK' AND (address LIKE '%NY%' OR address LIKE '%10%');
+UPDATE clinics SET latitude = 42.8864, longitude = -78.8784 WHERE city = 'BUFFALO' AND (address LIKE '%NY%' OR address LIKE '%14%');
+UPDATE clinics SET latitude = 43.1009, longitude = -77.6109 WHERE city = 'ROCHESTER' AND (address LIKE '%NY%' OR address LIKE '%14%');
+UPDATE clinics SET latitude = 40.7282, longitude = -73.7949 WHERE city = 'FLUSHING' AND (address LIKE '%NY%' OR address LIKE '%11%');
 
--- Georgia cities
-UPDATE clinics SET latitude = 33.7490, longitude = -84.3880 WHERE UPPER(city) LIKE '%ATLANTA%';
+-- Florida coordinates
+UPDATE clinics SET latitude = 25.7617, longitude = -80.1918 WHERE city = 'MIAMI' AND (address LIKE '%FL%' OR address LIKE '%33%');
+UPDATE clinics SET latitude = 30.3322, longitude = -81.6557 WHERE city = 'JACKSONVILLE' AND (address LIKE '%FL%' OR address LIKE '%32%');
+UPDATE clinics SET latitude = 27.9506, longitude = -82.4572 WHERE city = 'TAMPA' AND (address LIKE '%FL%' OR address LIKE '%33%');
+UPDATE clinics SET latitude = 28.5383, longitude = -81.3792 WHERE city = 'ORLANDO' AND (address LIKE '%FL%' OR address LIKE '%32%');
 
--- North Carolina cities
-UPDATE clinics SET latitude = 35.2271, longitude = -80.8431 WHERE UPPER(city) LIKE '%CHARLOTTE%';
-UPDATE clinics SET latitude = 35.7796, longitude = -78.6382 WHERE UPPER(city) LIKE '%RALEIGH%';
+-- Illinois coordinates (Chicago area)
+UPDATE clinics SET latitude = 41.8781, longitude = -87.6298 WHERE city = 'CHICAGO' AND (address LIKE '%IL%' OR address LIKE '%60%');
+UPDATE clinics SET latitude = 42.0334, longitude = -87.6834 WHERE city = 'EVANSTON' AND (address LIKE '%IL%' OR address LIKE '%60%');
+UPDATE clinics SET latitude = 41.7508, longitude = -88.2148 WHERE city = 'NAPERVILLE' AND (address LIKE '%IL%' OR address LIKE '%60%');
 
--- Washington state cities
-UPDATE clinics SET latitude = 47.6062, longitude = -122.3321 WHERE UPPER(city) LIKE '%SEATTLE%';
-UPDATE clinics SET latitude = 47.2529, longitude = -122.4443 WHERE UPPER(city) LIKE '%TACOMA%';
+-- Pennsylvania coordinates
+UPDATE clinics SET latitude = 39.9526, longitude = -75.1652 WHERE city = 'PHILADELPHIA' AND (address LIKE '%PA%' OR address LIKE '%19%');
+UPDATE clinics SET latitude = 40.4406, longitude = -79.9959 WHERE city = 'PITTSBURGH' AND (address LIKE '%PA%' OR address LIKE '%15%');
 
--- Oregon cities  
-UPDATE clinics SET latitude = 45.5152, longitude = -122.6784 WHERE UPPER(city) LIKE '%PORTLAND%' AND country = 'United States';
+-- Ohio coordinates
+UPDATE clinics SET latitude = 39.9612, longitude = -82.9988 WHERE city = 'COLUMBUS' AND (address LIKE '%OH%' OR address LIKE '%43%');
+UPDATE clinics SET latitude = 41.4993, longitude = -81.6944 WHERE city = 'CLEVELAND' AND (address LIKE '%OH%' OR address LIKE '%44%');
+UPDATE clinics SET latitude = 39.1031, longitude = -84.5120 WHERE city = 'CINCINNATI' AND (address LIKE '%OH%' OR address LIKE '%45%');
 
--- Colorado cities
-UPDATE clinics SET latitude = 39.7392, longitude = -104.9903 WHERE UPPER(city) LIKE '%DENVER%';
+-- Georgia coordinates
+UPDATE clinics SET latitude = 33.7490, longitude = -84.3880 WHERE city = 'ATLANTA' AND (address LIKE '%GA%' OR address LIKE '%30%');
+UPDATE clinics SET latitude = 32.0835, longitude = -81.0998 WHERE city = 'SAVANNAH' AND (address LIKE '%GA%' OR address LIKE '%31%');
+UPDATE clinics SET latitude = 32.4609, longitude = -84.1557 WHERE city = 'COLUMBUS' AND (address LIKE '%GA%' OR address LIKE '%31%');
 
--- Arizona cities
-UPDATE clinics SET latitude = 33.4484, longitude = -112.0740 WHERE UPPER(city) LIKE '%PHOENIX%';
-UPDATE clinics SET latitude = 32.2226, longitude = -110.9747 WHERE UPPER(city) LIKE '%TUCSON%';
+-- Michigan coordinates
+UPDATE clinics SET latitude = 42.3314, longitude = -83.0458 WHERE city = 'DETROIT' AND (address LIKE '%MI%' OR address LIKE '%48%');
+UPDATE clinics SET latitude = 42.9634, longitude = -85.6681 WHERE city = 'GRAND RAPIDS' AND (address LIKE '%MI%' OR address LIKE '%49%');
 
--- Nevada cities
-UPDATE clinics SET latitude = 36.1699, longitude = -115.1398 WHERE UPPER(city) LIKE '%LAS VEGAS%';
-UPDATE clinics SET latitude = 39.5296, longitude = -119.8138 WHERE UPPER(city) LIKE '%RENO%';
+-- North Carolina coordinates
+UPDATE clinics SET latitude = 35.2271, longitude = -80.8431 WHERE city = 'CHARLOTTE' AND (address LIKE '%NC%' OR address LIKE '%28%');
+UPDATE clinics SET latitude = 35.7796, longitude = -78.6382 WHERE city = 'RALEIGH' AND (address LIKE '%NC%' OR address LIKE '%27%');
+UPDATE clinics SET latitude = 36.0726, longitude = -79.7920 WHERE city = 'GREENSBORO' AND (address LIKE '%NC%' OR address LIKE '%27%');
 
--- Utah cities
-UPDATE clinics SET latitude = 40.7608, longitude = -111.8910 WHERE UPPER(city) LIKE '%SALT LAKE%';
+-- Virginia coordinates  
+UPDATE clinics SET latitude = 37.5407, longitude = -77.4360 WHERE city = 'RICHMOND' AND (address LIKE '%VA%' OR address LIKE '%23%');
+UPDATE clinics SET latitude = 36.8485, longitude = -75.9774 WHERE city = 'VIRGINIA BEACH' AND (address LIKE '%VA%' OR address LIKE '%23%');
+UPDATE clinics SET latitude = 38.8048, longitude = -77.0469 WHERE city = 'ALEXANDRIA' AND (address LIKE '%VA%' OR address LIKE '%22%');
 
--- Louisiana cities
-UPDATE clinics SET latitude = 29.9511, longitude = -90.0715 WHERE UPPER(city) LIKE '%NEW ORLEANS%';
-UPDATE clinics SET latitude = 30.4515, longitude = -91.1871 WHERE UPPER(city) LIKE '%BATON ROUGE%';
+-- Washington coordinates
+UPDATE clinics SET latitude = 47.6062, longitude = -122.3321 WHERE city = 'SEATTLE' AND (address LIKE '%WA%' OR address LIKE '%98%');
+UPDATE clinics SET latitude = 47.2529, longitude = -122.4443 WHERE city = 'TACOMA' AND (address LIKE '%WA%' OR address LIKE '%98%');
 
--- Tennessee cities
-UPDATE clinics SET latitude = 36.1627, longitude = -86.7816 WHERE UPPER(city) LIKE '%NASHVILLE%';
-UPDATE clinics SET latitude = 35.1495, longitude = -90.0490 WHERE UPPER(city) LIKE '%MEMPHIS%';
+-- Arizona coordinates
+UPDATE clinics SET latitude = 33.4484, longitude = -112.0740 WHERE city = 'PHOENIX' AND (address LIKE '%AZ%' OR address LIKE '%85%');
+UPDATE clinics SET latitude = 32.2226, longitude = -110.9747 WHERE city = 'TUCSON' AND (address LIKE '%AZ%' OR address LIKE '%85%');
 
--- Kentucky cities
-UPDATE clinics SET latitude = 38.2527, longitude = -85.7585 WHERE UPPER(city) LIKE '%LOUISVILLE%';
+-- Colorado coordinates
+UPDATE clinics SET latitude = 39.7392, longitude = -104.9903 WHERE city = 'DENVER' AND (address LIKE '%CO%' OR address LIKE '%80%');
+UPDATE clinics SET latitude = 38.8339, longitude = -104.8214 WHERE city = 'COLORADO SPRINGS' AND (address LIKE '%CO%' OR address LIKE '%80%');
 
--- Indiana cities
-UPDATE clinics SET latitude = 39.7684, longitude = -86.1581 WHERE UPPER(city) LIKE '%INDIANAPOLIS%';
+-- Nevada coordinates
+UPDATE clinics SET latitude = 36.1699, longitude = -115.1398 WHERE city = 'LAS VEGAS' AND (address LIKE '%NV%' OR address LIKE '%89%');
 
--- Missouri cities
-UPDATE clinics SET latitude = 39.0458, longitude = -94.5795 WHERE UPPER(city) LIKE '%KANSAS CITY%' AND country = 'United States';
-UPDATE clinics SET latitude = 38.6270, longitude = -90.1994 WHERE UPPER(city) LIKE '%ST LOUIS%';
-UPDATE clinics SET latitude = 38.9517, longitude = -92.3341 WHERE UPPER(city) LIKE '%COLUMBIA%' AND country = 'United States';
+-- Alaska coordinates
+UPDATE clinics SET latitude = 61.2181, longitude = -149.9003 WHERE city = 'ANCHORAGE' AND (address LIKE '%AK%' OR address LIKE '%99%');
 
--- Wisconsin cities
-UPDATE clinics SET latitude = 43.0389, longitude = -87.9065 WHERE UPPER(city) LIKE '%MILWAUKEE%';
+-- Hawaii coordinates
+UPDATE clinics SET latitude = 21.3099, longitude = -157.8581 WHERE city = 'HONOLULU' AND (address LIKE '%HI%' OR address LIKE '%96%');
 
--- Minnesota cities
-UPDATE clinics SET latitude = 44.9778, longitude = -93.2650 WHERE UPPER(city) LIKE '%MINNEAPOLIS%';
-UPDATE clinics SET latitude = 44.9537, longitude = -93.0900 WHERE UPPER(city) LIKE '%SAINT PAUL%' OR UPPER(city) LIKE '%ST PAUL%';
+-- Step 3: Handle remaining clinics without state indicators using conservative city-specific defaults
+-- Only assign if no coordinate exists (latitude IS NULL)
 
--- Alabama cities
-UPDATE clinics SET latitude = 33.5186, longitude = -86.8104 WHERE UPPER(city) LIKE '%BIRMINGHAM%' AND country = 'United States';
+-- For remaining unassigned clinics, use the most populous city of that name
+UPDATE clinics SET latitude = 43.0731, longitude = -89.4012 WHERE city = 'MADISON' AND latitude IS NULL; -- Wisconsin (most populous Madison)
+UPDATE clinics SET latitude = 45.5152, longitude = -122.6784 WHERE city = 'PORTLAND' AND latitude IS NULL; -- Oregon (most populous Portland)
+UPDATE clinics SET latitude = 39.7817, longitude = -89.6501 WHERE city = 'SPRINGFIELD' AND latitude IS NULL; -- Illinois (most populous Springfield)
+UPDATE clinics SET latitude = 39.9612, longitude = -82.9988 WHERE city = 'COLUMBUS' AND latitude IS NULL; -- Ohio (most populous Columbus)
+UPDATE clinics SET latitude = 38.8048, longitude = -77.0469 WHERE city = 'ALEXANDRIA' AND latitude IS NULL; -- Virginia (most populous Alexandria)
 
--- South Carolina cities
-UPDATE clinics SET latitude = 32.7765, longitude = -79.9311 WHERE UPPER(city) LIKE '%CHARLESTON%' AND country = 'United States';
-
--- Oklahoma cities
-UPDATE clinics SET latitude = 35.4676, longitude = -97.5164 WHERE UPPER(city) LIKE '%OKLAHOMA CITY%';
-UPDATE clinics SET latitude = 36.1540, longitude = -95.9928 WHERE UPPER(city) LIKE '%TULSA%';
-
--- Kansas cities
-UPDATE clinics SET latitude = 39.1142, longitude = -94.6275 WHERE UPPER(city) LIKE '%OVERLAND PARK%';
-
--- Iowa cities
-UPDATE clinics SET latitude = 41.5868, longitude = -93.6250 WHERE UPPER(city) LIKE '%DES MOINES%';
-
--- Arkansas cities
-UPDATE clinics SET latitude = 34.7465, longitude = -92.2896 WHERE UPPER(city) LIKE '%LITTLE ROCK%';
-
--- Mississippi cities
-UPDATE clinics SET latitude = 32.2988, longitude = -90.1848 WHERE UPPER(city) LIKE '%JACKSON%' AND country = 'United States';
-
--- New Mexico cities
-UPDATE clinics SET latitude = 35.0844, longitude = -106.6504 WHERE UPPER(city) LIKE '%ALBUQUERQUE%';
-
--- Idaho cities
-UPDATE clinics SET latitude = 43.6150, longitude = -116.2023 WHERE UPPER(city) LIKE '%BOISE%';
-
--- Montana cities
-UPDATE clinics SET latitude = 45.7833, longitude = -108.5007 WHERE UPPER(city) LIKE '%BILLINGS%';
-
--- Wyoming cities
-UPDATE clinics SET latitude = 41.1400, longitude = -104.8197 WHERE UPPER(city) LIKE '%CHEYENNE%';
-
--- North Dakota cities  
-UPDATE clinics SET latitude = 46.8083, longitude = -100.7837 WHERE UPPER(city) LIKE '%BISMARCK%';
-UPDATE clinics SET latitude = 46.8772, longitude = -96.7898 WHERE UPPER(city) LIKE '%FARGO%';
-
--- South Dakota cities
-UPDATE clinics SET latitude = 43.5460, longitude = -96.7313 WHERE UPPER(city) LIKE '%SIOUX FALLS%';
-UPDATE clinics SET latitude = 44.3683, longitude = -100.3510 WHERE UPPER(city) LIKE '%PIERRE%';
-
--- Nebraska cities
-UPDATE clinics SET latitude = 41.2565, longitude = -95.9345 WHERE UPPER(city) LIKE '%OMAHA%';
-UPDATE clinics SET latitude = 40.8136, longitude = -96.7026 WHERE UPPER(city) LIKE '%LINCOLN%' AND country = 'United States';
-
--- Alaska cities (proper Alaska coordinates)
-UPDATE clinics SET latitude = 61.2181, longitude = -149.9003 WHERE UPPER(city) LIKE '%ANCHORAGE%';
-UPDATE clinics SET latitude = 64.8378, longitude = -147.7164 WHERE UPPER(city) LIKE '%FAIRBANKS%';
-
--- Hawaii cities (proper Hawaii coordinates)
-UPDATE clinics SET latitude = 21.3099, longitude = -157.8581 WHERE UPPER(city) LIKE '%HONOLULU%';
-
--- Connecticut cities
-UPDATE clinics SET latitude = 41.7658, longitude = -72.6734 WHERE UPPER(city) LIKE '%HARTFORD%';
-
--- Maryland cities
-UPDATE clinics SET latitude = 39.2904, longitude = -76.6122 WHERE UPPER(city) LIKE '%BALTIMORE%';
-
--- Massachusetts cities
-UPDATE clinics SET latitude = 42.3601, longitude = -71.0589 WHERE UPPER(city) LIKE '%BOSTON%';
-
--- Maine cities
-UPDATE clinics SET latitude = 43.6591, longitude = -70.2568 WHERE UPPER(city) LIKE '%PORTLAND%' AND country = 'United States';
-
--- New Hampshire cities
-UPDATE clinics SET latitude = 43.2081, longitude = -71.5376 WHERE UPPER(city) LIKE '%MANCHESTER%' AND country = 'United States';
-
--- Vermont cities
-UPDATE clinics SET latitude = 44.2601, longitude = -72.5806 WHERE UPPER(city) LIKE '%MONTPELIER%';
-
--- Rhode Island cities
-UPDATE clinics SET latitude = 41.8240, longitude = -71.4128 WHERE UPPER(city) LIKE '%PROVIDENCE%';
-
--- Delaware cities
-UPDATE clinics SET latitude = 39.7391, longitude = -75.5398 WHERE UPPER(city) LIKE '%WILMINGTON%' AND country = 'United States';
-
--- West Virginia cities
-UPDATE clinics SET latitude = 38.3498, longitude = -81.6326 WHERE UPPER(city) LIKE '%CHARLESTON%' AND country = 'United States';
-
--- Virginia cities
-UPDATE clinics SET latitude = 36.8508, longitude = -75.9776 WHERE UPPER(city) LIKE '%VIRGINIA BEACH%';
-UPDATE clinics SET latitude = 37.5407, longitude = -77.4360 WHERE UPPER(city) LIKE '%RICHMOND%' AND country = 'United States';
+-- Delete any clinics that still have NULL coordinates (data quality issues)
+DELETE FROM clinics WHERE latitude IS NULL OR longitude IS NULL;

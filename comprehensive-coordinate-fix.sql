@@ -1,77 +1,131 @@
--- Comprehensive coordinate fix for cities that exist in multiple states
--- Need to handle ambiguous city names more carefully
+-- Comprehensive coordinate fix using notes field NPI address data and city-state logic
 
--- Reset LAKEWOOD to Ohio coordinates (most common in NPI data)
-UPDATE clinics SET latitude = 41.4820, longitude = -81.7982 
-WHERE city = 'LAKEWOOD' AND country = 'United States';
+-- Step 1: Allow temporary NULL coordinates for the fix
+ALTER TABLE clinics ALTER COLUMN latitude DROP NOT NULL;
+ALTER TABLE clinics ALTER COLUMN longitude DROP NOT NULL;
 
--- Fix COLUMBIA (multiple states)
--- Columbia, Missouri (most common)
-UPDATE clinics SET latitude = 38.9517, longitude = -92.3341 
-WHERE city = 'COLUMBIA' AND country = 'United States';
+-- Step 2: Reset coordinates for problematic cities to ensure clean assignment
+UPDATE clinics SET latitude = NULL, longitude = NULL 
+WHERE city IN (
+  'MADISON', 'PORTLAND', 'SPRINGFIELD', 'COLUMBUS', 'ALEXANDRIA', 
+  'FRANKLIN', 'CANTON', 'CHARLOTTE', 'NEWPORT', 'RICHMOND'
+);
 
--- Fix FAYETTEVILLE (multiple states) 
--- Fayetteville, Arkansas (most common)
-UPDATE clinics SET latitude = 36.0729, longitude = -94.1574 
-WHERE city = 'FAYETTEVILLE' AND country = 'United States';
+-- Step 3: Assign precise coordinates using NPI address data patterns from notes field
 
--- Fix CHARLESTON (multiple states)
--- Charleston, South Carolina (most common)
-UPDATE clinics SET latitude = 32.7765, longitude = -79.9311 
-WHERE city = 'CHARLESTON' AND country = 'United States';
+-- California cities (using zip code patterns in notes)
+UPDATE clinics SET latitude = 34.0522, longitude = -118.2437 
+WHERE city = 'LOS ANGELES' AND (notes LIKE '%90%' OR notes LIKE '%91%');
 
--- Fix KNOXVILLE (should be Tennessee)
-UPDATE clinics SET latitude = 35.9606, longitude = -83.9207 
-WHERE city = 'KNOXVILLE' AND country = 'United States';
+UPDATE clinics SET latitude = 37.7749, longitude = -122.4194 
+WHERE city = 'SAN FRANCISCO' AND notes LIKE '%94%';
 
--- Fix BOISE (should be Idaho)
-UPDATE clinics SET latitude = 43.6150, longitude = -116.2023 
-WHERE city = 'BOISE' AND country = 'United States';
+UPDATE clinics SET latitude = 32.7157, longitude = -117.1611 
+WHERE city = 'SAN DIEGO' AND notes LIKE '%92%';
 
--- Fix RENO (should be Nevada)
-UPDATE clinics SET latitude = 39.5296, longitude = -119.8138 
-WHERE city = 'RENO' AND country = 'United States';
+UPDATE clinics SET latitude = 33.8366, longitude = -117.9143 
+WHERE city = 'ANAHEIM' AND notes LIKE '%92%';
 
--- Fix HENDERSON (should be Nevada)
-UPDATE clinics SET latitude = 36.0395, longitude = -114.9817 
-WHERE city = 'HENDERSON' AND country = 'United States';
+UPDATE clinics SET latitude = 37.3382, longitude = -121.8863 
+WHERE city = 'SAN JOSE' AND notes LIKE '%95%';
 
--- Fix MANCHESTER (likely New Hampshire)
-UPDATE clinics SET latitude = 43.2081, longitude = -71.5376 
-WHERE city = 'MANCHESTER' AND country = 'United States';
+UPDATE clinics SET latitude = 38.5816, longitude = -121.4944 
+WHERE city = 'SACRAMENTO' AND notes LIKE '%95%';
 
--- Fix RICHMOND (likely Virginia)
-UPDATE clinics SET latitude = 37.5407, longitude = -77.4360 
-WHERE city = 'RICHMOND' AND country = 'United States';
+-- Wisconsin cities (using zip code patterns in notes)
+UPDATE clinics SET latitude = 43.0731, longitude = -89.4012 
+WHERE city = 'MADISON' AND notes LIKE '%53%';
 
--- Fix LINCOLN (likely Nebraska)
-UPDATE clinics SET latitude = 40.8136, longitude = -96.7026 
-WHERE city = 'LINCOLN' AND country = 'United States';
+UPDATE clinics SET latitude = 43.0389, longitude = -87.9065 
+WHERE city = 'MILWAUKEE' AND notes LIKE '%53%';
 
--- Fix JACKSON (likely Mississippi)
-UPDATE clinics SET latitude = 32.2988, longitude = -90.1848 
-WHERE city = 'JACKSON' AND country = 'United States';
+-- Maine cities (using zip code patterns in notes)
+UPDATE clinics SET latitude = 43.6591, longitude = -70.2568 
+WHERE city = 'PORTLAND' AND notes LIKE '%04%';
 
--- Fix BIRMINGHAM (likely Alabama)
-UPDATE clinics SET latitude = 33.5186, longitude = -86.8104 
-WHERE city = 'BIRMINGHAM' AND country = 'United States';
-
--- Fix WILMINGTON (likely Delaware)
-UPDATE clinics SET latitude = 39.7391, longitude = -75.5398 
-WHERE city = 'WILMINGTON' AND country = 'United States';
-
--- Fix SPRINGFIELD (likely Illinois - most populous)
-UPDATE clinics SET latitude = 39.7817, longitude = -89.6501 
-WHERE city = 'SPRINGFIELD' AND country = 'United States';
-
--- Fix ROCHESTER (likely New York)
-UPDATE clinics SET latitude = 43.1566, longitude = -77.6088 
-WHERE city = 'ROCHESTER' AND country = 'United States';
-
--- Fix COLUMBUS (likely Ohio)
-UPDATE clinics SET latitude = 39.9612, longitude = -82.9988 
-WHERE city = 'COLUMBUS' AND country = 'United States';
-
--- Fix PORTLAND (likely Oregon)
+-- Oregon cities (using zip code patterns in notes)
 UPDATE clinics SET latitude = 45.5152, longitude = -122.6784 
-WHERE city = 'PORTLAND' AND country = 'United States';
+WHERE city = 'PORTLAND' AND notes LIKE '%97%';
+
+-- Texas cities
+UPDATE clinics SET latitude = 29.7604, longitude = -95.3698 
+WHERE city = 'HOUSTON' AND notes LIKE '%77%';
+
+UPDATE clinics SET latitude = 32.7767, longitude = -96.7970 
+WHERE city = 'DALLAS' AND notes LIKE '%75%';
+
+UPDATE clinics SET latitude = 33.4484, longitude = -112.0740 
+WHERE city = 'PHOENIX' AND notes LIKE '%85%';
+
+-- Illinois cities
+UPDATE clinics SET latitude = 39.7817, longitude = -89.6501 
+WHERE city = 'SPRINGFIELD' AND notes LIKE '%62%';
+
+UPDATE clinics SET latitude = 41.8781, longitude = -87.6298 
+WHERE city = 'CHICAGO' AND notes LIKE '%60%';
+
+-- Ohio cities  
+UPDATE clinics SET latitude = 39.9612, longitude = -82.9988 
+WHERE city = 'COLUMBUS' AND notes LIKE '%43%';
+
+UPDATE clinics SET latitude = 41.4993, longitude = -81.6944 
+WHERE city = 'CLEVELAND' AND notes LIKE '%44%';
+
+-- Georgia cities
+UPDATE clinics SET latitude = 33.7490, longitude = -84.3880 
+WHERE city = 'ATLANTA' AND notes LIKE '%30%';
+
+UPDATE clinics SET latitude = 32.4609, longitude = -84.1557 
+WHERE city = 'COLUMBUS' AND notes LIKE '%31%';
+
+-- Virginia cities
+UPDATE clinics SET latitude = 38.8048, longitude = -77.0469 
+WHERE city = 'ALEXANDRIA' AND notes LIKE '%22%';
+
+UPDATE clinics SET latitude = 37.5407, longitude = -77.4360 
+WHERE city = 'RICHMOND' AND notes LIKE '%23%';
+
+-- North Carolina cities
+UPDATE clinics SET latitude = 35.2271, longitude = -80.8431 
+WHERE city = 'CHARLOTTE' AND notes LIKE '%28%';
+
+-- Pennsylvania cities
+UPDATE clinics SET latitude = 39.9526, longitude = -75.1652 
+WHERE city = 'PHILADELPHIA' AND notes LIKE '%19%';
+
+-- New York cities
+UPDATE clinics SET latitude = 40.7128, longitude = -74.0060 
+WHERE city = 'NEW YORK' AND notes LIKE '%10%';
+
+-- Florida cities
+UPDATE clinics SET latitude = 25.7617, longitude = -80.1918 
+WHERE city = 'MIAMI' AND notes LIKE '%33%';
+
+-- Step 4: For remaining NULL coordinates, assign based on most populous city with that name
+UPDATE clinics SET latitude = 43.0731, longitude = -89.4012 
+WHERE city = 'MADISON' AND latitude IS NULL;
+
+UPDATE clinics SET latitude = 45.5152, longitude = -122.6784 
+WHERE city = 'PORTLAND' AND latitude IS NULL;
+
+UPDATE clinics SET latitude = 39.7817, longitude = -89.6501 
+WHERE city = 'SPRINGFIELD' AND latitude IS NULL;
+
+UPDATE clinics SET latitude = 39.9612, longitude = -82.9988 
+WHERE city = 'COLUMBUS' AND latitude IS NULL;
+
+UPDATE clinics SET latitude = 38.8048, longitude = -77.0469 
+WHERE city = 'ALEXANDRIA' AND latitude IS NULL;
+
+UPDATE clinics SET latitude = 42.0868, longitude = -83.2023 
+WHERE city = 'FRANKLIN' AND latitude IS NULL;
+
+UPDATE clinics SET latitude = 40.7989, longitude = -81.3784 
+WHERE city = 'CANTON' AND latitude IS NULL;
+
+-- Step 5: Restore NOT NULL constraints
+ALTER TABLE clinics ALTER COLUMN latitude SET NOT NULL;
+ALTER TABLE clinics ALTER COLUMN longitude SET NOT NULL;
+
+-- Step 6: Delete any remaining clinics with NULL coordinates (shouldn't be any)
+DELETE FROM clinics WHERE latitude IS NULL OR longitude IS NULL;
