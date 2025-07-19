@@ -126,7 +126,7 @@ async function importAndFixNPI() {
   }
   
   // Get NPI data and import with accurate coordinates
-  const url = 'https://clinicaltables.nlm.nih.gov/api/npi_org/v3/search?terms=speech%20language&maxList=500&ef=name.full,addr_practice.city,addr_practice.state,addr_practice.line1,addr_practice.phone';
+  const url = 'https://clinicaltables.nlm.nih.gov/api/npi_org/v3/search?terms=speech%20language&maxList=1500&ef=name.full,addr_practice.city,addr_practice.state,addr_practice.line1,addr_practice.phone';
   
   try {
     console.log('📥 Fetching speech-language pathology providers from NPI...');
