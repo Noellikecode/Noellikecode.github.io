@@ -366,8 +366,8 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
 
 
 
-  // Show empty state when no filters applied
-  if (filteredClinics.length === 0) {
+  // Show empty state only when there are no clinics to display and no filters applied
+  if (filteredClinics.length === 0 && clinics.length === 0) {
     return (
       <div className="h-full w-full flex items-center justify-center bg-gray-50">
         <div className="text-center p-8 max-w-md">

@@ -227,7 +227,7 @@ export default function Home() {
       <div className="flex-1 min-h-0">
         <InteractiveMap 
           clinics={clinics}
-          filteredClinics={hasAppliedFilters ? filteredClinics : []} 
+          filteredClinics={filteredClinics} 
           onClinicClick={setSelectedClinic}
           isLoading={isLoading}
           selectedState={filters.state}
