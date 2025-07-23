@@ -156,7 +156,6 @@ export default function Home() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="free">Free</SelectItem>
                   <SelectItem value="low-cost">Low Cost</SelectItem>
                   <SelectItem value="market-rate">Market Rate</SelectItem>
                 </SelectContent>
