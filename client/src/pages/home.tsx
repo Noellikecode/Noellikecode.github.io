@@ -237,12 +237,12 @@ export default function Home() {
         onClose={() => setIsSubmissionModalOpen(false)}
       />
 
-      {/* ML Insights Dashboard - Only show after map loads */}
-      {!isLoading && (
+      {/* ML Insights Dashboard - Only show after map loads and welcome modal is closed */}
+      {!isLoading && !isWelcomeModalOpen && (
         <MLInsightsDashboard
           filteredClinics={filteredClinics}
           filters={filters}
-          isVisible={!isWelcomeModalOpen}
+          isVisible={true}
           onToggle={() => setIsMlInsightsVisible(!isMlInsightsVisible)}
         />
       )}

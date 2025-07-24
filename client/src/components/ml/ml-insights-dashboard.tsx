@@ -183,8 +183,10 @@ export default function MLInsightsDashboard({
                   {filters.state && filters.state !== "all" ? (
                     <span>Filtered to {filters.state} • </span>
                   ) : null}
-                  {filters.services?.length > 0 ? (
+                  {filters.services && Array.isArray(filters.services) && filters.services.length > 0 ? (
                     <span>Services: {filters.services.join(", ")} • </span>
+                  ) : filters.services && filters.services !== "all" ? (
+                    <span>Services: {filters.services} • </span>
                   ) : null}
                   Last updated: {new Date().toLocaleTimeString()}
                 </div>
