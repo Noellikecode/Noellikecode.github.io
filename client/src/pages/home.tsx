@@ -9,6 +9,7 @@ import InteractiveMap from "@/components/map/interactive-map";
 import ClinicModal from "@/components/modals/clinic-modal";
 import SubmissionModal from "@/components/modals/submission-modal";
 import WelcomeModal from "@/components/modals/welcome-modal";
+import MLInsightsDashboard from "@/components/ml/ml-insights-dashboard";
 import { Clinic } from "@/types/clinic";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -19,6 +20,7 @@ export default function Home() {
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(true);
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
+  const [isMlInsightsVisible, setIsMlInsightsVisible] = useState(true);
   const [filters, setFilters] = useState({
     costLevel: "all",
     services: "all",
@@ -233,6 +235,14 @@ export default function Home() {
       <SubmissionModal 
         isOpen={isSubmissionModalOpen}
         onClose={() => setIsSubmissionModalOpen(false)}
+      />
+
+      {/* ML Insights Dashboard */}
+      <MLInsightsDashboard
+        filteredClinics={filteredClinics}
+        filters={filters}
+        isVisible={isMlInsightsVisible}
+        onToggle={() => setIsMlInsightsVisible(!isMlInsightsVisible)}
       />
 
       {/* Mobile Bottom Navigation */}
