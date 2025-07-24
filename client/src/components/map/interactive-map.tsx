@@ -185,11 +185,11 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         const bounds = new L_imported.LatLngBounds([]);
         let markerCount = 0;
 
-        // Smart load - show filtered results only
-        const hasActiveFilters = filteredClinics.length > 0;
-        const markersToShow = filteredClinics; // Only show filtered results
+        // Smart load - show filtered results or all clinics
+        const markersToShow = filteredClinics.length > 0 ? filteredClinics : clinics;
+        const hasActiveFilters = filteredClinics.length > 0 && filteredClinics.length < clinics.length;
         
-        // If no markers to show, don't initialize map
+        // If no markers to show at all, don't initialize map
         if (markersToShow.length === 0) {
           console.log('No markers to show, skipping map initialization');
           setMapReady(true);

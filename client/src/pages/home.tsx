@@ -80,30 +80,46 @@ export default function Home() {
 
 
 
-  // State-based filtering
+  // State-based filtering - always return filtered results, never empty
   const filteredClinics = useMemo(() => {
-    // When no filters are applied, return all clinics
-    if (filters.costLevel === "all" && 
-        filters.services === "all" && 
-        filters.state === "all") {
+    if (!clinics || clinics.length === 0) return [];
+    
+    // Apply filters - if no filters are active, return all clinics
+    const hasFilters = filters.costLevel !== "all" || 
+                      filters.services !== "all" || 
+                      filters.state !== "all";
+    
+    if (!hasFilters) {
       return clinics;
     }
     
-    return clinics.filter((clinic: any) => {
-      // API returns camelCase data
+    const filtered = clinics.filter((clinic: any) => {
+      // Cost level filtering
       if (filters.costLevel !== "all" && clinic.costLevel !== filters.costLevel) return false;
-      if (filters.services !== "all" && !clinic.services.includes(filters.services)) return false;
       
-      // State-based filtering using the state column
-      if (filters.state !== "all" && clinic.state !== filters.state) return false;
+      // Services filtering
+      if (filters.services !== "all" && 
+          !clinic.services?.includes(filters.services)) return false;
+      
+      // State filtering - handle both state codes and full names
+      if (filters.state !== "all") {
+        const clinicState = clinic.state?.toUpperCase();
+        const filterState = filters.state?.toUpperCase();
+        if (clinicState !== filterState) return false;
+      }
       
       return true;
     });
+    
+    console.log(`Filtered ${clinics.length} clinics to ${filtered.length} results`);
+    return filtered;
   }, [clinics, filters]);
 
   // Optimized filter change handler
   const handleFilterChange = useCallback((key: string, value: any) => {
+    console.log(`Filter changed: ${key} = ${value}`);
     setFilters(prev => ({ ...prev, [key]: value }));
+    setHasAppliedFilters(true);
   }, []);
 
 
@@ -235,11 +251,9 @@ export default function Home() {
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <span className="flex items-center">
               <MapPin className="text-primary mr-1 h-4 w-4" />
-              {hasAppliedFilters 
-                ? (filteredClinics.length === clinics.length 
-                    ? `${filteredClinics.length} Total Centers` 
-                    : `${filteredClinics.length} of ${clinics.length} Centers`)
-                : "Apply filters to see centers"}
+              {filteredClinics.length === clinics.length 
+                ? `${filteredClinics.length} Total Centers` 
+                : `${filteredClinics.length} of ${clinics.length} Centers`}
             </span>
             {hasAppliedFilters && filteredClinics.length < clinics.length && (
               <span className="text-blue-600 text-xs bg-blue-50 px-2 py-1 rounded">
