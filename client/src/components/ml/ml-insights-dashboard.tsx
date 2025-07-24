@@ -35,6 +35,9 @@ export default function MLInsightsDashboard({
   const { data: mlInsights, isLoading: mlLoading } = useQuery({
     queryKey: ["/api/ml/insights"],
     refetchInterval: 30000, // Refresh every 30 seconds
+    retry: false, // Don't retry failed requests to avoid blocking map
+    staleTime: 60000, // Cache for 1 minute
+    enabled: isVisible, // Only fetch when dashboard is visible
   });
 
   if (!isVisible) return null;

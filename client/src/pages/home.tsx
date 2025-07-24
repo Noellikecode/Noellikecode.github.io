@@ -20,7 +20,7 @@ export default function Home() {
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(true);
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
-  const [isMlInsightsVisible, setIsMlInsightsVisible] = useState(true);
+  const [isMlInsightsVisible, setIsMlInsightsVisible] = useState(false);
   const [filters, setFilters] = useState({
     costLevel: "all",
     services: "all",
@@ -237,13 +237,15 @@ export default function Home() {
         onClose={() => setIsSubmissionModalOpen(false)}
       />
 
-      {/* ML Insights Dashboard */}
-      <MLInsightsDashboard
-        filteredClinics={filteredClinics}
-        filters={filters}
-        isVisible={isMlInsightsVisible}
-        onToggle={() => setIsMlInsightsVisible(!isMlInsightsVisible)}
-      />
+      {/* ML Insights Dashboard - Only show after map loads */}
+      {!isLoading && (
+        <MLInsightsDashboard
+          filteredClinics={filteredClinics}
+          filters={filters}
+          isVisible={!isWelcomeModalOpen}
+          onToggle={() => setIsMlInsightsVisible(!isMlInsightsVisible)}
+        />
+      )}
 
       {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden z-30">

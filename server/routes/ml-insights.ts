@@ -114,8 +114,7 @@ router.get('/api/ml/insights', async (req, res) => {
         coverage: {
           totalCoverage: coverage.totalCoverage,
           underservedAreas: coverage.underservedAreas,
-          optimalNewLocations: coverage.optimalNewLocations,
-          highDensityAreas: coverage.highDensityAreas
+          optimalNewLocations: coverage.optimalNewLocations
         },
         expansion: optimalLocations,
         dataQuality: {
