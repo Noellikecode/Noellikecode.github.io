@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Globe, Plus, Settings, MapPin, Users } from "lucide-react";
+
+import { Globe, Plus, MapPin, Users } from "lucide-react";
 import InteractiveMap from "@/components/map/interactive-map";
 import ClinicModal from "@/components/modals/clinic-modal";
 import SubmissionModal from "@/components/modals/submission-modal";
@@ -24,7 +24,6 @@ export default function Home() {
   const [filters, setFilters] = useState({
     costLevel: "all",
     services: "all",
-    teletherapy: false,
     state: "all",
   });
 
@@ -86,7 +85,6 @@ export default function Home() {
     // When no filters are applied, return all clinics
     if (filters.costLevel === "all" && 
         filters.services === "all" && 
-        !filters.teletherapy && 
         filters.state === "all") {
       return clinics;
     }
@@ -95,7 +93,6 @@ export default function Home() {
       // API returns camelCase data
       if (filters.costLevel !== "all" && clinic.costLevel !== filters.costLevel) return false;
       if (filters.services !== "all" && !clinic.services.includes(filters.services)) return false;
-      if (filters.teletherapy && !clinic.teletherapy) return false;
       
       // State-based filtering using the state column
       if (filters.state !== "all" && clinic.state !== filters.state) return false;
@@ -131,9 +128,7 @@ export default function Home() {
                 <Plus className="mr-2 h-4 w-4" />
                 Add Location
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => setLocation("/admin")}>
-                <Settings className="h-5 w-5" />
-              </Button>
+
             </div>
           </div>
         </div>
@@ -176,12 +171,65 @@ export default function Home() {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="teletherapy" 
-                checked={filters.teletherapy}
-                onCheckedChange={(checked) => handleFilterChange("teletherapy", checked)}
-              />
-              <label htmlFor="teletherapy" className="text-sm text-gray-700">Teletherapy Available</label>
+              <label className="text-sm font-medium text-gray-700">State:</label>
+              <Select value={filters.state} onValueChange={(value) => handleFilterChange("state", value)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="All States" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All States</SelectItem>
+                  <SelectItem value="AL">Alabama</SelectItem>
+                  <SelectItem value="AK">Alaska</SelectItem>
+                  <SelectItem value="AZ">Arizona</SelectItem>
+                  <SelectItem value="AR">Arkansas</SelectItem>
+                  <SelectItem value="CA">California</SelectItem>
+                  <SelectItem value="CO">Colorado</SelectItem>
+                  <SelectItem value="CT">Connecticut</SelectItem>
+                  <SelectItem value="DE">Delaware</SelectItem>
+                  <SelectItem value="FL">Florida</SelectItem>
+                  <SelectItem value="GA">Georgia</SelectItem>
+                  <SelectItem value="HI">Hawaii</SelectItem>
+                  <SelectItem value="ID">Idaho</SelectItem>
+                  <SelectItem value="IL">Illinois</SelectItem>
+                  <SelectItem value="IN">Indiana</SelectItem>
+                  <SelectItem value="IA">Iowa</SelectItem>
+                  <SelectItem value="KS">Kansas</SelectItem>
+                  <SelectItem value="KY">Kentucky</SelectItem>
+                  <SelectItem value="LA">Louisiana</SelectItem>
+                  <SelectItem value="ME">Maine</SelectItem>
+                  <SelectItem value="MD">Maryland</SelectItem>
+                  <SelectItem value="MA">Massachusetts</SelectItem>
+                  <SelectItem value="MI">Michigan</SelectItem>
+                  <SelectItem value="MN">Minnesota</SelectItem>
+                  <SelectItem value="MS">Mississippi</SelectItem>
+                  <SelectItem value="MO">Missouri</SelectItem>
+                  <SelectItem value="MT">Montana</SelectItem>
+                  <SelectItem value="NE">Nebraska</SelectItem>
+                  <SelectItem value="NV">Nevada</SelectItem>
+                  <SelectItem value="NH">New Hampshire</SelectItem>
+                  <SelectItem value="NJ">New Jersey</SelectItem>
+                  <SelectItem value="NM">New Mexico</SelectItem>
+                  <SelectItem value="NY">New York</SelectItem>
+                  <SelectItem value="NC">North Carolina</SelectItem>
+                  <SelectItem value="ND">North Dakota</SelectItem>
+                  <SelectItem value="OH">Ohio</SelectItem>
+                  <SelectItem value="OK">Oklahoma</SelectItem>
+                  <SelectItem value="OR">Oregon</SelectItem>
+                  <SelectItem value="PA">Pennsylvania</SelectItem>
+                  <SelectItem value="RI">Rhode Island</SelectItem>
+                  <SelectItem value="SC">South Carolina</SelectItem>
+                  <SelectItem value="SD">South Dakota</SelectItem>
+                  <SelectItem value="TN">Tennessee</SelectItem>
+                  <SelectItem value="TX">Texas</SelectItem>
+                  <SelectItem value="UT">Utah</SelectItem>
+                  <SelectItem value="VT">Vermont</SelectItem>
+                  <SelectItem value="VA">Virginia</SelectItem>
+                  <SelectItem value="WA">Washington</SelectItem>
+                  <SelectItem value="WV">West Virginia</SelectItem>
+                  <SelectItem value="WI">Wisconsin</SelectItem>
+                  <SelectItem value="WY">Wyoming</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex items-center space-x-4 text-sm text-gray-600">
