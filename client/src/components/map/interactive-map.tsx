@@ -185,9 +185,9 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         const bounds = new L_imported.LatLngBounds([]);
         let markerCount = 0;
 
-        // Smart load - show filtered results or all clinics
-        const markersToShow = filteredClinics.length > 0 ? filteredClinics : clinics;
-        const hasActiveFilters = filteredClinics.length > 0 && filteredClinics.length < clinics.length;
+        // Always show only filtered results - never show all clinics when filters are applied  
+        const markersToShow = filteredClinics;
+        const hasActiveFilters = filteredClinics.length < clinics.length;
         
         // If no markers to show at all, don't initialize map
         if (markersToShow.length === 0) {
@@ -341,23 +341,21 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         setMapError(false);
         initializingRef.current = false;
         
-        // Handle state-specific zooming or fit bounds
-        if (selectedState && selectedState !== "all" && getStateBounds) {
-          const stateBounds = getStateBounds(selectedState);
-          if (stateBounds) {
-            try {
-              map.setView(stateBounds.center, stateBounds.zoom);
-              console.log(`Zoomed to ${selectedState}: center ${stateBounds.center}, zoom ${stateBounds.zoom}`);
-            } catch (e) {
-              console.warn('Failed to zoom to state, using marker bounds');
-            }
-          }
-        } else if (markerCount > 0 && bounds.isValid()) {
+        // Always fit to the actual markers that are shown
+        if (markerCount > 0 && bounds.isValid()) {
           try {
-            map.fitBounds(bounds, { padding: [20, 20] });
+            // For state filtering, use tighter bounds around the markers
+            const paddingOptions = hasActiveFilters ? { padding: [50, 50] } : { padding: [20, 20] };
+            map.fitBounds(bounds, paddingOptions);
+            console.log(`Map fitted to ${markerCount} markers with ${hasActiveFilters ? 'active' : 'no'} filters`);
           } catch (e) {
             console.warn('Failed to fit bounds, using default view');
+            // Fallback to center US view
+            map.setView([39.8283, -98.5795], 4);
           }
+        } else {
+          // No markers to show - center on US
+          map.setView([39.8283, -98.5795], 4);
         }
 
       } catch (error) {
