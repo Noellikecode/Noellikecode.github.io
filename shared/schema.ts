@@ -13,6 +13,7 @@ export const clinics = pgTable("clinics", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
   country: text("country").notNull(),
+  state: text("state").notNull(),
   city: text("city").notNull(),
   latitude: real("latitude").notNull(),
   longitude: real("longitude").notNull(),

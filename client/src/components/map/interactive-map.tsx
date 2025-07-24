@@ -127,8 +127,7 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
             const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
               attribution: '© OpenStreetMap contributors',
               maxZoom: 18,
-              minZoom: 2,
-              timeout: 10000
+              minZoom: 2
             });
 
             let tilesLoaded = false;
@@ -182,7 +181,8 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         map.getRenderer = map.getRenderer || (() => L.canvas());
 
         // Add clinic markers with optimized batching
-        const bounds = new (await import('leaflet')).LatLngBounds();
+        const L_imported = await import('leaflet');
+        const bounds = new L_imported.LatLngBounds([]);
         let markerCount = 0;
 
         // Smart load - show filtered results only

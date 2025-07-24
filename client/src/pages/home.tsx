@@ -19,12 +19,10 @@ export default function Home() {
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(true);
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; zipcode: string } | null>(null);
   const [filters, setFilters] = useState({
     costLevel: "all",
     services: "all",
     teletherapy: false,
-    country: "all",
     state: "all",
   });
 
@@ -56,10 +54,7 @@ export default function Home() {
     setHasAppliedFilters(true);
   }, []);
 
-  const handleLocationSearch = useCallback((zipcode: string, location: { lat: number; lon: number }) => {
-    setUserLocation({ ...location, zipcode });
-    setHasAppliedFilters(true);
-  }, []);
+
 
 
 
@@ -84,66 +79,28 @@ export default function Home() {
 
 
 
-  // Calculate distance between two coordinates (in miles)
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 3959; // Earth's radius in miles
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
-
-  // Enhanced filtering with location-based and state-based geographic filtering
+  // State-based filtering
   const filteredClinics = useMemo(() => {
-    let filtered = clinics;
-
-    // If user searched by location, filter by proximity first (specific zipcode area)
-    if (userLocation) {
-      filtered = clinics.filter((clinic: any) => {
-        if (!clinic.latitude || !clinic.longitude) return false;
-        const distance = calculateDistance(
-          userLocation.lat, 
-          userLocation.lon, 
-          clinic.latitude, 
-          clinic.longitude
-        );
-        return distance <= 3; // 3 mile radius for specific zipcode area
-      });
-    }
-
-    // When no filters are applied and no location search, return all/filtered clinics
+    // When no filters are applied, return all clinics
     if (filters.costLevel === "all" && 
         filters.services === "all" && 
         !filters.teletherapy && 
-        filters.country === "all" && 
         filters.state === "all") {
-      return filtered;
+      return clinics;
     }
     
-    return filtered.filter((clinic: any) => {
+    return clinics.filter((clinic: any) => {
       // API returns camelCase data
       if (filters.costLevel !== "all" && clinic.costLevel !== filters.costLevel) return false;
       if (filters.services !== "all" && !clinic.services.includes(filters.services)) return false;
       if (filters.teletherapy && !clinic.teletherapy) return false;
-      if (filters.country !== "all" && clinic.country !== filters.country) return false;
       
-      // State-based geographic filtering
-      if (filters.state !== "all") {
-        const bounds = getStateBounds(filters.state);
-        if (bounds && clinic.latitude && clinic.longitude) {
-          const inLatBounds = clinic.latitude >= bounds.lat[0] && clinic.latitude <= bounds.lat[1];
-          const inLngBounds = clinic.longitude >= bounds.lng[0] && clinic.longitude <= bounds.lng[1];
-          if (!inLatBounds || !inLngBounds) return false;
-        }
-      }
+      // State-based filtering using the state column
+      if (filters.state !== "all" && clinic.state !== filters.state) return false;
       
       return true;
     });
-  }, [clinics, filters, userLocation]);
+  }, [clinics, filters]);
 
   // Optimized filter change handler
   const handleFilterChange = useCallback((key: string, value: any) => {
@@ -163,8 +120,8 @@ export default function Home() {
                 <Globe className="text-white h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Global Speech Access Map</h1>
-                <p className="text-sm text-gray-500">Crowdsourced speech therapy resources worldwide</p>
+                <h1 className="text-xl font-semibold text-gray-900">North American Speech Access App</h1>
+                <p className="text-sm text-gray-500">Speech therapy resources across North America</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -215,19 +172,7 @@ export default function Home() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">Region:</label>
-              <Select value={filters.country} onValueChange={(value) => handleFilterChange("country", value)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Regions</SelectItem>
-                  <SelectItem value="United States">United States</SelectItem>
-                  <SelectItem value="Canada">Canada</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+
             <div className="flex items-center space-x-2">
               <Checkbox 
                 id="teletherapy" 
@@ -268,7 +213,6 @@ export default function Home() {
           isLoading={isLoading}
           selectedState={filters.state}
           getStateBounds={getStateBounds}
-          userLocation={userLocation}
         />
       </div>
 
@@ -277,7 +221,6 @@ export default function Home() {
         isOpen={isWelcomeModalOpen}
         onClose={() => setIsWelcomeModalOpen(false)}
         onApplyFilters={handleApplyFilters}
-        onLocationSearch={handleLocationSearch}
         totalClinics={clinics.length}
       />
       
