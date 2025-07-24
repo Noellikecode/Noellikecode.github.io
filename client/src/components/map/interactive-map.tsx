@@ -490,7 +490,7 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
       )}
 
       {mapReady && !mapError && (
-        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-10">
+        <div className="absolute top-20 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-10">
           <div className="text-sm font-semibold text-gray-800">Interactive Map</div>
           <div className="text-xs text-gray-600">{clinics.length} speech therapy centers</div>
           <div className="text-xs text-gray-500 mt-1">Click markers for details</div>
