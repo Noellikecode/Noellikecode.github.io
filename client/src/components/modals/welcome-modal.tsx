@@ -97,7 +97,6 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Cost Levels</SelectItem>
-                      <SelectItem value="free">Free</SelectItem>
                       <SelectItem value="low-cost">Low Cost</SelectItem>
                       <SelectItem value="market-rate">Market Rate</SelectItem>
                     </SelectContent>
