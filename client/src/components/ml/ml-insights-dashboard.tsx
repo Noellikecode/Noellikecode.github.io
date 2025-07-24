@@ -12,7 +12,9 @@ import {
   Zap,
   ChevronDown,
   ChevronUp,
-  Sparkles
+  Sparkles,
+  Crown,
+  Star
 } from "lucide-react";
 import { useState } from "react";
 import { Clinic } from "@/types/clinic";
@@ -119,16 +121,48 @@ export default function MLInsightsDashboard({
                     <div className="text-xs text-red-600">areas identified</div>
                   </div>
 
-                  <div className="bg-blue-50 p-3 rounded-lg">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <TrendingUp className="h-4 w-4 text-blue-500" />
-                      <span className="text-xs font-medium text-blue-800">Opportunities</span>
+                  {insights.topRatedCenters && insights.topRatedCenters.length > 0 ? (
+                    <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-3 rounded-lg border border-purple-200">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Crown className="h-4 w-4 text-purple-600" />
+                        <span className="text-xs font-medium text-purple-800">Top 3 in {insights.state}</span>
+                      </div>
+                      <div className="space-y-2">
+                        {insights.topRatedCenters.slice(0, 3).map((center: any, index: number) => (
+                          <div key={center.id} className="bg-white p-2 rounded border border-gray-100 hover:shadow-sm transition-shadow">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center space-x-1">
+                                <Badge 
+                                  variant={center.tier === 'Platinum' ? 'default' : 'secondary'}
+                                  className={`text-xs ${
+                                    center.tier === 'Platinum' ? 'bg-purple-100 text-purple-800' : 
+                                    'bg-yellow-100 text-yellow-800'
+                                  }`}
+                                >
+                                  #{index + 1}
+                                </Badge>
+                                <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                                <span className="text-xs font-bold">{center.rating}</span>
+                              </div>
+                            </div>
+                            <h4 className="font-medium text-xs text-gray-900 mb-1 truncate">{center.name}</h4>
+                            <p className="text-xs text-gray-600">{center.city} • {center.reviewCount} reviews</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="text-lg font-bold text-blue-600">
-                      {insights.coverage.optimalNewLocations?.length || 0}
+                  ) : (
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <TrendingUp className="h-4 w-4 text-blue-500" />
+                        <span className="text-xs font-medium text-blue-800">Opportunities</span>
+                      </div>
+                      <div className="text-lg font-bold text-blue-600">
+                        {insights.coverage.optimalNewLocations?.length || 0}
+                      </div>
+                      <div className="text-xs text-blue-600">growth zones</div>
                     </div>
-                    <div className="text-xs text-blue-600">growth zones</div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Priority Alert */}
