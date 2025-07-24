@@ -4,7 +4,7 @@
 
 A crowdsourced interactive mapping platform that helps people find speech therapy resources worldwide. The application displays clinics, programs, and teletherapy services on an interactive map, allowing users to discover and contribute information about speech therapy accessibility globally.
 
-**Current Status**: Massively expanded to 4,368 authentic speech therapy centers from comprehensive NPI database import (Jan 2025) using 47 specialized search terms for complete nationwide coverage. Ultra expansion achieved perfect balance: 1,517 low-cost, 1,431 market-rate, 1,420 free clinics with 1,440 teletherapy providers. Dense urban coverage includes Brooklyn (65), Chicago (47), Lakewood (45), NYC (39), Houston (36) centers. Features zipcode-based "Find Near Me" functionality with 25-mile radius search, automatic map zoom to user location, and blue location marker. Interactive Leaflet map with comprehensive filtering by cost level, services, region, state, and teletherapy availability.
+**Current Status**: Massively expanded to 5,451 authentic speech therapy centers from exhaustive NPI database import (Jan 2025) using 129+ specialized search terms for maximum nationwide coverage. Database includes Brooklyn (122), Miami (56), Chicago (52), NYC (49), Houston (42) centers providing dense metropolitan coverage. Features precise zipcode-based "Find Near Me" functionality with 3-mile radius search, automatic map zoom to user location (level 13), and blue location marker. Interactive Leaflet map with comprehensive filtering by cost level, services, region, state, and teletherapy availability.
 
 ## User Preferences
 
@@ -54,7 +54,7 @@ Preferred communication style: Simple, everyday language.
 - `GET /api/analytics` - Site analytics
 
 ### Core Features
-- **Interactive Map**: Leaflet-based world map with 4,368 authentic speech therapy center markers and zipcode-based location finding
+- **Interactive Map**: Leaflet-based world map with 5,451+ authentic speech therapy center markers and precise zipcode-based location finding
 - **NPI Integration**: Automated import system from National Provider Identifier database for authentic clinic data
 - **Submission System**: User-friendly form for adding new clinics
 - **Admin Dashboard**: Review and approval workflow for submissions, plus NPI import functionality
