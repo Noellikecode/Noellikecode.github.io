@@ -101,7 +101,7 @@ export default function Home() {
   const filteredClinics = useMemo(() => {
     let filtered = clinics;
 
-    // If user searched by location, filter by proximity first
+    // If user searched by location, filter by proximity first (specific zipcode area)
     if (userLocation) {
       filtered = clinics.filter((clinic: any) => {
         if (!clinic.latitude || !clinic.longitude) return false;
@@ -111,7 +111,7 @@ export default function Home() {
           clinic.latitude, 
           clinic.longitude
         );
-        return distance <= 25; // 25 mile radius
+        return distance <= 3; // 3 mile radius for specific zipcode area
       });
     }
 

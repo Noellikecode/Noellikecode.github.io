@@ -121,7 +121,7 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, onLocati
                   Find Centers Near You
                 </CardTitle>
                 <CardDescription>
-                  Enter your zipcode to see speech therapy centers in your area
+                  Enter your zipcode to see ALL speech therapy centers in that immediate area
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -161,8 +161,8 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, onLocati
                   <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
                     <p className="font-medium mb-1">What happens next:</p>
                     <ul className="space-y-1 text-xs">
-                      <li>• We'll find speech therapy centers within 25 miles of your zipcode</li>
-                      <li>• The map will zoom to your area with nearby options</li>
+                      <li>• We'll show ALL speech therapy centers within 3 miles of your zipcode</li>
+                      <li>• The map will zoom directly to your zipcode area</li>
                       <li>• You can still use filters to refine your search</li>
                     </ul>
                   </div>

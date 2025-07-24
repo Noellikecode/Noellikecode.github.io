@@ -103,7 +103,7 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
             
             if (userLocation) {
               initialCenter = [userLocation.lat, userLocation.lon];
-              initialZoom = 10; // Closer zoom for user location
+              initialZoom = 13; // Much closer zoom for specific zipcode area
             }
             
             const map = L.map(container, {
@@ -309,7 +309,7 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
               <div style="padding: 8px; text-align: center;">
                 <h3 style="margin: 0 0 6px 0; font-weight: bold; color: #3b82f6;">Your Location</h3>
                 <p style="margin: 0; color: #6b7280; font-size: 13px;">📍 Zipcode: ${userLocation.zipcode}</p>
-                <p style="margin: 4px 0 0 0; color: #059669; font-size: 12px;">Showing clinics within 25 miles</p>
+                <p style="margin: 4px 0 0 0; color: #059669; font-size: 12px;">Showing clinics within 3 miles</p>
               </div>
             `, {
               maxWidth: 200,
