@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, MapPin, Eye, Clock, Users, Download } from "lucide-react";
+import { CheckCircle, XCircle, MapPin, Eye, Clock, Users, Download, Brain, Target, TrendingUp, Zap } from "lucide-react";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";

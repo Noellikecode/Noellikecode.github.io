@@ -5,6 +5,7 @@ import { insertClinicSchema, insertSubmissionSchema } from "@shared/schema";
 import { z } from "zod";
 import { npiService } from "./npi-service";
 import { getCoordinates } from "@shared/utils";
+import mlInsightsRouter from "./routes/ml-insights";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all verified clinics
@@ -227,6 +228,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to import from NPI" });
     }
   });
+
+  // Mount ML insights routes
+  app.use(mlInsightsRouter);
 
   const httpServer = createServer(app);
   return httpServer;
