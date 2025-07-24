@@ -33,7 +33,13 @@ export default function MLInsightsDashboard({
   const [isExpanded, setIsExpanded] = useState(true);
 
   const { data: mlInsights, isLoading: mlLoading } = useQuery({
-    queryKey: ["/api/ml/insights"],
+    queryKey: ["/api/ml/insights", filters.state],
+    queryFn: async () => {
+      const params = filters.state && filters.state !== 'all' ? `?state=${encodeURIComponent(filters.state)}` : '';
+      const res = await fetch(`/api/ml/insights${params}`);
+      if (!res.ok) throw new Error("Failed to fetch ML insights");
+      return res.json();
+    },
     refetchInterval: 60000, // Refresh every minute
     retry: 1, // Only retry once
     staleTime: 120000, // Cache for 2 minutes
