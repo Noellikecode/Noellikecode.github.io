@@ -444,10 +444,10 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
   }
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full z-0">
       <div 
         ref={mapContainerRef} 
-        className="h-full w-full"
+        className="h-full w-full z-0"
         style={{ 
           minHeight: '400px',
           backgroundColor: '#f0f8ff'
@@ -455,7 +455,7 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
       />
       
       {!mapReady && (
-        <div className="absolute inset-0 bg-blue-50 flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-blue-50 flex items-center justify-center z-0">
           <div className="text-center">
             <LoadingSpinner />
             <p className="mt-2 text-gray-700">Loading interactive map...</p>
