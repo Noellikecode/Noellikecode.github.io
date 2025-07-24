@@ -19,6 +19,7 @@ export default function Home() {
   const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(true);
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number; zipcode: string } | null>(null);
   const [filters, setFilters] = useState({
     costLevel: "all",
     services: "all",
@@ -50,6 +51,16 @@ export default function Home() {
     apiRequest("POST", "/api/analytics/view").catch(console.error);
   }, []);
 
+  const handleApplyFilters = useCallback((newFilters: any) => {
+    setFilters(newFilters);
+    setHasAppliedFilters(true);
+  }, []);
+
+  const handleLocationSearch = useCallback((zipcode: string, location: { lat: number; lon: number }) => {
+    setUserLocation({ ...location, zipcode });
+    setHasAppliedFilters(true);
+  }, []);
+
 
 
   // State coordinate boundaries for accurate filtering and zooming
@@ -73,18 +84,47 @@ export default function Home() {
 
 
 
-  // Enhanced filtering with accurate state-based geographic filtering
+  // Calculate distance between two coordinates (in miles)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 3959; // Earth's radius in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Enhanced filtering with location-based and state-based geographic filtering
   const filteredClinics = useMemo(() => {
-    // When all filters are "all" or default, return all clinics to show the map
+    let filtered = clinics;
+
+    // If user searched by location, filter by proximity first
+    if (userLocation) {
+      filtered = clinics.filter((clinic: any) => {
+        if (!clinic.latitude || !clinic.longitude) return false;
+        const distance = calculateDistance(
+          userLocation.lat, 
+          userLocation.lon, 
+          clinic.latitude, 
+          clinic.longitude
+        );
+        return distance <= 25; // 25 mile radius
+      });
+    }
+
+    // When no filters are applied and no location search, return all/filtered clinics
     if (filters.costLevel === "all" && 
         filters.services === "all" && 
         !filters.teletherapy && 
         filters.country === "all" && 
         filters.state === "all") {
-      return clinics;
+      return filtered;
     }
     
-    return clinics.filter((clinic: any) => {
+    return filtered.filter((clinic: any) => {
       // API returns camelCase data
       if (filters.costLevel !== "all" && clinic.costLevel !== filters.costLevel) return false;
       if (filters.services !== "all" && !clinic.services.includes(filters.services)) return false;
@@ -103,18 +143,14 @@ export default function Home() {
       
       return true;
     });
-  }, [clinics, filters]);
+  }, [clinics, filters, userLocation]);
 
   // Optimized filter change handler
   const handleFilterChange = useCallback((key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  // Handle welcome modal filter application
-  const handleWelcomeFilters = useCallback((newFilters: any) => {
-    setFilters(newFilters);
-    setHasAppliedFilters(true);
-  }, []);
+
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
@@ -232,6 +268,7 @@ export default function Home() {
           isLoading={isLoading}
           selectedState={filters.state}
           getStateBounds={getStateBounds}
+          userLocation={userLocation}
         />
       </div>
 
@@ -239,7 +276,8 @@ export default function Home() {
       <WelcomeModal 
         isOpen={isWelcomeModalOpen}
         onClose={() => setIsWelcomeModalOpen(false)}
-        onApplyFilters={handleWelcomeFilters}
+        onApplyFilters={handleApplyFilters}
+        onLocationSearch={handleLocationSearch}
         totalClinics={clinics.length}
       />
       

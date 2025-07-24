@@ -9,9 +9,10 @@ interface InteractiveMapProps {
   isLoading?: boolean;
   selectedState?: string;
   getStateBounds?: (state: string) => any;
+  userLocation?: { lat: number; lon: number; zipcode: string } | null;
 }
 
-export default function InteractiveMap({ clinics, filteredClinics, onClinicClick, isLoading, selectedState, getStateBounds }: InteractiveMapProps) {
+export default function InteractiveMap({ clinics, filteredClinics, onClinicClick, isLoading, selectedState, getStateBounds, userLocation }: InteractiveMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -96,9 +97,18 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         // Create map with timeout protection
         const mapCreationPromise = new Promise<any>((resolve, reject) => {
           try {
+            // Determine initial center and zoom based on user location
+            let initialCenter: [number, number] = [39.8283, -98.5795]; // Center of USA
+            let initialZoom = 4;
+            
+            if (userLocation) {
+              initialCenter = [userLocation.lat, userLocation.lon];
+              initialZoom = 10; // Closer zoom for user location
+            }
+            
             const map = L.map(container, {
-              center: [39.8283, -98.5795], // Center of USA
-              zoom: 4,
+              center: initialCenter,
+              zoom: initialZoom,
               zoomControl: true,
               scrollWheelZoom: true,
               doubleClickZoom: true,
@@ -268,6 +278,48 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
           }, 150);
         });
 
+        // Add user location marker if available
+        if (userLocation) {
+          const userIcon = L.divIcon({
+            className: 'user-location-marker',
+            html: `<div style="
+              background: #3b82f6; 
+              border: 3px solid white; 
+              border-radius: 50%; 
+              width: 20px; 
+              height: 20px;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">
+              <div style="
+                background: white; 
+                border-radius: 50%; 
+                width: 8px; 
+                height: 8px;
+              "></div>
+            </div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+          });
+
+          const userMarker = L.marker([userLocation.lat, userLocation.lon], { icon: userIcon })
+            .bindPopup(`
+              <div style="padding: 8px; text-align: center;">
+                <h3 style="margin: 0 0 6px 0; font-weight: bold; color: #3b82f6;">Your Location</h3>
+                <p style="margin: 0; color: #6b7280; font-size: 13px;">📍 Zipcode: ${userLocation.zipcode}</p>
+                <p style="margin: 4px 0 0 0; color: #059669; font-size: 12px;">Showing clinics within 25 miles</p>
+              </div>
+            `, {
+              maxWidth: 200,
+              closeButton: true
+            });
+
+          userMarker.addTo(map);
+          markersRef.current.push(userMarker);
+        }
+
         // Fit map to markers
         if (markerCount > 0) {
           try {
@@ -351,7 +403,7 @@ export default function InteractiveMap({ clinics, filteredClinics, onClinicClick
         mapInstanceRef.current = null;
       }
     };
-  }, [clinics, filteredClinics, onClinicClick]);
+  }, [clinics, filteredClinics, onClinicClick, userLocation]);
 
   if (isLoading) {
     return (
