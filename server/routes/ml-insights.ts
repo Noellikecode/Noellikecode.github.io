@@ -94,31 +94,40 @@ router.get('/api/ml/detect-duplicates', async (req, res) => {
   }
 });
 
-// Combined ML insights endpoint
+// Main ML insights endpoint for dashboard
 router.get('/api/ml/insights', async (req, res) => {
   try {
     const optimizer = new GeospatialOptimizer();
     const enhancer = new DataEnhancer();
     
-    // Run analysis in parallel
-    const [coverageAnalysis, optimalLocations, duplicates] = await Promise.all([
+    // Run comprehensive analysis
+    const [coverage, optimalLocations, duplicates] = await Promise.all([
       optimizer.analyzeGeospatialCoverage(),
-      optimizer.identifyOptimalClinicPlacements(5),
+      optimizer.identifyOptimalClinicPlacements(6),
       enhancer.detectDuplicates()
     ]);
     
-    res.json({
+    // Format response for dashboard
+    const response = {
       success: true,
       data: {
-        coverage: coverageAnalysis,
+        coverage: {
+          totalCoverage: coverage.totalCoverage,
+          underservedAreas: coverage.underservedAreas,
+          optimalNewLocations: coverage.optimalNewLocations,
+          highDensityAreas: coverage.highDensityAreas
+        },
         expansion: optimalLocations,
         dataQuality: {
           duplicatesFound: duplicates.length,
           topDuplicates: duplicates.slice(0, 5)
         }
       },
-      message: 'ML insights generated successfully.'
-    });
+      timestamp: new Date().toISOString(),
+      message: `Analysis complete: ${coverage.totalCoverage.toFixed(1)}% coverage, ${coverage.underservedAreas.length} underserved areas identified.`
+    };
+    
+    res.json(response);
   } catch (error) {
     console.error('ML insights error:', error);
     res.status(500).json({

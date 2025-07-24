@@ -33,7 +33,7 @@ export default function MLInsightsDashboard({
   const [isExpanded, setIsExpanded] = useState(true);
 
   const { data: mlInsights, isLoading: mlLoading } = useQuery({
-    queryKey: ["/api/ml/insights", filters],
+    queryKey: ["/api/ml/insights"],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
