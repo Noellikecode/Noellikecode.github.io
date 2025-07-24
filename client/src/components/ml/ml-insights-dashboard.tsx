@@ -108,7 +108,7 @@ export default function MLInsightsDashboard({
                       <span className="text-xs font-medium text-red-800">Underserved</span>
                     </div>
                     <div className="text-lg font-bold text-red-600">
-                      {insights.coverage.underservedAreas.length}
+                      {insights.coverage.underservedAreas?.length || 0}
                     </div>
                     <div className="text-xs text-red-600">areas identified</div>
                   </div>
@@ -119,14 +119,14 @@ export default function MLInsightsDashboard({
                       <span className="text-xs font-medium text-blue-800">Opportunities</span>
                     </div>
                     <div className="text-lg font-bold text-blue-600">
-                      {insights.coverage.optimalNewLocations.length}
+                      {insights.coverage.optimalNewLocations?.length || 0}
                     </div>
                     <div className="text-xs text-blue-600">growth zones</div>
                   </div>
                 </div>
 
                 {/* Priority Alert */}
-                {insights.coverage.underservedAreas.length > 0 && (
+                {insights.coverage.underservedAreas?.length > 0 && (
                   <div className="bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border border-orange-200">
                     <div className="flex items-center space-x-2 mb-2">
                       <MapPin className="h-4 w-4 text-orange-600" />
@@ -149,7 +149,7 @@ export default function MLInsightsDashboard({
                 )}
 
                 {/* Expansion Recommendations */}
-                {insights.expansion.length > 0 && (
+                {insights.expansion?.length > 0 && (
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2 mb-2">
                       <Sparkles className="h-4 w-4 text-purple-500" />

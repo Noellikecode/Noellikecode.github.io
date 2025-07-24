@@ -111,6 +111,11 @@ async function updateInsightsCache() {
       data: {
         coverage: {
           totalCoverage: 20.2,
+          optimalNewLocations: [
+            { city: "Mesa", state: "AZ", population: 520000, score: 9.2 },
+            { city: "Virginia Beach", state: "VA", population: 450000, score: 8.8 },
+            { city: "Raleigh", state: "NC", population: 470000, score: 7.9 }
+          ],
           personalizedInsights: [
             {
               type: "opportunity",
