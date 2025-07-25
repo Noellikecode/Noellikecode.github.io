@@ -104,15 +104,38 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
           const chunk = validClinics.slice(currentIndex, currentIndex + chunkSize);
           
           chunk.forEach(clinic => {
-            // Create a simple colored circle marker instead of default pins
-            const marker = L.circleMarker([clinic.latitude, clinic.longitude], {
-              radius: 6,
-              fillColor: '#3b82f6', // Blue color
-              color: '#1e40af', // Darker blue border
-              weight: 2,
-              opacity: 1,
-              fillOpacity: 0.8
-            })
+            // Create a custom pin-style marker using DivIcon
+            const pinIcon = L.divIcon({
+              className: 'custom-pin-marker',
+              html: `
+                <div style="
+                  width: 20px; 
+                  height: 30px; 
+                  background: #3b82f6; 
+                  border: 2px solid #1e40af;
+                  border-radius: 50% 50% 50% 0;
+                  transform: rotate(-45deg);
+                  margin-left: -10px;
+                  margin-top: -30px;
+                  position: relative;
+                ">
+                  <div style="
+                    width: 8px; 
+                    height: 8px; 
+                    background: white; 
+                    border-radius: 50%;
+                    position: absolute;
+                    top: 4px;
+                    left: 4px;
+                    transform: rotate(45deg);
+                  "></div>
+                </div>
+              `,
+              iconSize: [20, 30],
+              iconAnchor: [10, 30]
+            });
+            
+            const marker = L.marker([clinic.latitude, clinic.longitude], { icon: pinIcon })
               .addTo(map)
               .bindPopup(`<strong>${clinic.name}</strong><br/>${clinic.city}`)
               .on('click', () => onClinicClick(clinic));
@@ -132,7 +155,7 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
           // Use every 10th marker for bounds calculation to improve performance
           const sampleClinics = validClinics.filter((_, index) => index % 10 === 0);
           const group = new L.FeatureGroup(
-            sampleClinics.map(c => L.circleMarker([c.latitude, c.longitude]))
+            sampleClinics.map(c => L.marker([c.latitude, c.longitude]))
           );
           map.fitBounds(group.getBounds(), { 
             padding: [20, 20],

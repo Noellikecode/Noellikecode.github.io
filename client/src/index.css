@@ -144,15 +144,17 @@
   opacity: 0.5 !important;
 }
 
-/* Style circle markers */
-.leaflet-interactive {
+/* Style custom pin markers */
+.custom-pin-marker {
   cursor: pointer !important;
+  background: transparent !important;
+  border: none !important;
 }
 
-/* Hover effects for circle markers */
-.leaflet-interactive:hover {
-  fill-opacity: 1 !important;
-  stroke-width: 3 !important;
+/* Hover effects for pin markers */
+.custom-pin-marker:hover {
+  transform: scale(1.1) !important;
+  z-index: 1000 !important;
 }
 
 .leaflet-control-container .leaflet-routing-container-hide {
