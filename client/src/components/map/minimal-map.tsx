@@ -104,17 +104,15 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
           const chunk = validClinics.slice(currentIndex, currentIndex + chunkSize);
           
           chunk.forEach(clinic => {
-            // Create custom icon to ensure visibility
-            const customIcon = L.icon({
-              iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-              shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
-              shadowSize: [41, 41]
-            });
-            
-            const marker = L.marker([clinic.latitude, clinic.longitude], { icon: customIcon })
+            // Create a simple colored circle marker instead of default pins
+            const marker = L.circleMarker([clinic.latitude, clinic.longitude], {
+              radius: 6,
+              fillColor: '#3b82f6', // Blue color
+              color: '#1e40af', // Darker blue border
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.8
+            })
               .addTo(map)
               .bindPopup(`<strong>${clinic.name}</strong><br/>${clinic.city}`)
               .on('click', () => onClinicClick(clinic));
@@ -134,7 +132,7 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
           // Use every 10th marker for bounds calculation to improve performance
           const sampleClinics = validClinics.filter((_, index) => index % 10 === 0);
           const group = new L.FeatureGroup(
-            sampleClinics.map(c => L.marker([c.latitude, c.longitude]))
+            sampleClinics.map(c => L.circleMarker([c.latitude, c.longitude]))
           );
           map.fitBounds(group.getBounds(), { 
             padding: [20, 20],
