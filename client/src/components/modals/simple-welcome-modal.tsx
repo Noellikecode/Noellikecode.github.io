@@ -44,12 +44,12 @@ export default function SimpleWelcomeModal({ isOpen, onClose, onApplyFilters, to
 
   if (isMapLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[5000]">
-        <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+      <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-[5000]">
+        <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 border shadow-lg">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-blue-600 rounded-full mx-auto mb-4"></div>
-            <h3 className="text-lg font-medium mb-2">Loading</h3>
-            <p className="text-gray-600">Please wait...</p>
+            <h3 className="text-lg font-medium mb-2">Loading Map</h3>
+            <p className="text-gray-600">Preparing speech therapy centers...</p>
           </div>
         </div>
       </div>

@@ -297,7 +297,7 @@ export default function Home() {
       </div>
 
       {/* Map Container - Takes remaining full height */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 relative">
         <InteractiveMap 
           clinics={clinics}
           filteredClinics={filteredClinics} 
@@ -319,6 +319,7 @@ export default function Home() {
       
       <ClinicModal 
         clinic={selectedClinic}
+        isOpen={!!selectedClinic}
         onClose={() => setSelectedClinic(null)}
       />
 
