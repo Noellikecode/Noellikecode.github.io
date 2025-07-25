@@ -184,44 +184,49 @@ export default function Home() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">Filter by Cost:</label>
-              <Select value={pendingFilters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="low-cost">Low Cost</SelectItem>
-                  <SelectItem value="market-rate">Market Rate</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Select value={pendingFilters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="low-cost">Low Cost</SelectItem>
+                    <SelectItem value="market-rate">Market Rate</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">Services:</label>
-              <Select value={pendingFilters.services} onValueChange={(value) => handleFilterChange("services", value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All Services" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Services</SelectItem>
-                  <SelectItem value="speech-therapy">Speech Therapy</SelectItem>
-                  <SelectItem value="language-therapy">Language Therapy</SelectItem>
-                  <SelectItem value="stuttering">Stuttering</SelectItem>
-                  <SelectItem value="apraxia">Apraxia</SelectItem>
-                  <SelectItem value="voice-therapy">Voice Therapy</SelectItem>
-                  <SelectItem value="feeding-therapy">Feeding Therapy</SelectItem>
-                  <SelectItem value="social-skills">Social Skills</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Select value={pendingFilters.services} onValueChange={(value) => handleFilterChange("services", value)}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="All Services" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Services</SelectItem>
+                    <SelectItem value="speech-therapy">Speech Therapy</SelectItem>
+                    <SelectItem value="language-therapy">Language Therapy</SelectItem>
+                    <SelectItem value="stuttering">Stuttering</SelectItem>
+                    <SelectItem value="apraxia">Apraxia</SelectItem>
+                    <SelectItem value="voice-therapy">Voice Therapy</SelectItem>
+                    <SelectItem value="feeding-therapy">Feeding Therapy</SelectItem>
+                    <SelectItem value="social-skills">Social Skills</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">State:</label>
-              <Select value={pendingFilters.state} onValueChange={(value) => handleFilterChange("state", value)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All States" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All States</SelectItem>
+              <div className="relative">
+                <Select value={pendingFilters.state} onValueChange={(value) => handleFilterChange("state", value)}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="All States" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All States</SelectItem>
                   <SelectItem value="Alabama">Alabama</SelectItem>
                   <SelectItem value="Alaska">Alaska</SelectItem>
                   <SelectItem value="Arizona">Arizona</SelectItem>
@@ -274,6 +279,7 @@ export default function Home() {
                   <SelectItem value="Wyoming">Wyoming</SelectItem>
                 </SelectContent>
               </Select>
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-4 text-sm text-gray-600">

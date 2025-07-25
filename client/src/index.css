@@ -102,8 +102,8 @@
   transition-delay: 0s !important;
 }
 
-/* Remove transforms from non-map elements only - exclude dialog/modal elements */
-*:not([class*="leaflet"]):not(.leaflet-container *):not([data-radix-portal]):not([data-radix-portal] *):not([data-state]) {
+/* Remove transforms from non-map elements only - exclude dialog/modal elements and selects */
+*:not([class*="leaflet"]):not(.leaflet-container *):not([data-radix-portal]):not([data-radix-portal] *):not([data-state]):not([data-radix-select-content]):not([data-radix-popper-content-wrapper]) {
   transform: none !important;
 }
 
