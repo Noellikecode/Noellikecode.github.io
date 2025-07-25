@@ -318,6 +318,7 @@ export default function Home() {
         onClose={() => setIsWelcomeModalOpen(false)}
         onApplyFilters={handleApplyFilters}
         totalClinics={clinics.length}
+        isMapLoading={isLoading || !clinics}
       />
       
       <ClinicModal 
