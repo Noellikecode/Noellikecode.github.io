@@ -180,21 +180,7 @@
   border: none !important;
 }
 
-/* Fix dropdown z-index issues over modal and map */
-[data-radix-popper-content-wrapper] {
-  z-index: 9999 !important;
-}
-
-[data-radix-select-content] {
-  z-index: 9999 !important;
-  position: fixed !important;
-}
-
-[data-radix-select-viewport] {
-  z-index: 9999 !important;
-}
-
-/* Fix modal positioning */
+/* Modal positioning only */
 [data-radix-dialog-overlay] {
   z-index: 5000 !important;
 }
@@ -206,9 +192,3 @@
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
 }
-
-.relative .absolute {
-  z-index: 999 !important;
-}
-
-/* Restore original working dropdown positioning */

@@ -179,7 +179,7 @@ export default function Home() {
       </header>
 
       {/* Map Controls */}
-      <div className="bg-white border-b px-4 py-3 flex-shrink-0 relative z-30">
+      <div className="bg-white border-b px-4 py-3 flex-shrink-0">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
