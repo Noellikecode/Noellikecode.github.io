@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { Clinic } from "@/types/clinic";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 
@@ -13,6 +13,8 @@ interface InteractiveMapProps {
 }
 
 export default function InteractiveMap({ clinics, filteredClinics, onClinicClick, isLoading, selectedState, getStateBounds, userLocation }: InteractiveMapProps) {
+  // Memoize filtered clinics to prevent unnecessary re-renders
+  const memoizedFilteredClinics = useMemo(() => filteredClinics, [filteredClinics.length, selectedState]);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);

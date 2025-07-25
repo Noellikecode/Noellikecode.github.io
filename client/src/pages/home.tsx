@@ -80,62 +80,79 @@ export default function Home() {
 
 
 
-  // State-based filtering - always return filtered results, never empty
+  // Optimized state-based filtering with performance improvements
   const filteredClinics = useMemo(() => {
     if (!clinics || clinics.length === 0) return [];
     
-    // Apply filters - if no filters are active, return all clinics
-    const hasFilters = filters.costLevel !== "all" || 
-                      filters.services !== "all" || 
-                      filters.state !== "all";
+    // Check if filters are active
+    const hasStateFilter = filters.state !== "all";
+    const hasCostFilter = filters.costLevel !== "all";
+    const hasServicesFilter = filters.services !== "all";
     
-    if (!hasFilters) {
+    if (!hasStateFilter && !hasCostFilter && !hasServicesFilter) {
       return clinics;
     }
     
+    // Pre-compute filter values for better performance
+    const filterState = hasStateFilter ? filters.state.toUpperCase().trim() : null;
+    
     const filtered = clinics.filter((clinic: any) => {
-      // Cost level filtering
-      if (filters.costLevel !== "all" && clinic.costLevel !== filters.costLevel) return false;
-      
-      // Services filtering
-      if (filters.services !== "all" && 
-          !clinic.services?.includes(filters.services)) return false;
-      
-      // State filtering - handle both state codes and full names
-      if (filters.state !== "all") {
+      // State filtering (most selective first)
+      if (hasStateFilter) {
         const clinicState = clinic.state?.toUpperCase()?.trim();
-        const filterState = filters.state?.toUpperCase()?.trim();
-        
-        // Debug logging
-        if (!clinicState || !filterState) {
-          console.log('Missing state data:', { clinic: clinic.name, clinicState, filterState });
-        }
-        
         if (clinicState !== filterState) return false;
       }
+      
+      // Cost level filtering
+      if (hasCostFilter && clinic.costLevel !== filters.costLevel) return false;
+      
+      // Services filtering
+      if (hasServicesFilter && !clinic.services?.includes(filters.services)) return false;
       
       return true;
     });
     
-    console.log(`Filtered ${clinics.length} clinics to ${filtered.length} results`);
     return filtered;
-  }, [clinics, filters]);
+  }, [clinics, filters.state, filters.costLevel, filters.services]);
 
-  // Optimized filter change handler with cache invalidation
-  const handleFilterChange = useCallback((key: string, value: any) => {
-    console.log(`Filter changed: ${key} = ${value}`);
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setHasAppliedFilters(true);
-    
-    // Force refresh of ML insights when state changes
-    if (key === 'state') {
-      import('@/lib/queryClient').then(({ queryClient }) => {
-        queryClient.invalidateQueries({ 
-          queryKey: ["/api/ml/insights"]
+  // Debounced filter change handler for smoother performance
+  const [pendingFilters, setPendingFilters] = useState(filters);
+  
+  const debouncedFilterUpdate = useMemo(
+    () => debounce((newFilters: any) => {
+      setFilters(newFilters);
+      setHasAppliedFilters(true);
+      
+      // Force refresh of ML insights when state changes
+      if (newFilters.state !== filters.state) {
+        import('@/lib/queryClient').then(({ queryClient }) => {
+          queryClient.invalidateQueries({ 
+            queryKey: ["/api/ml/insights"]
+          });
         });
-      });
-    }
-  }, []);
+      }
+    }, 150),
+    [filters.state]
+  );
+
+  const handleFilterChange = useCallback((key: string, value: any) => {
+    const newFilters = { ...pendingFilters, [key]: value };
+    setPendingFilters(newFilters);
+    debouncedFilterUpdate(newFilters);
+  }, [pendingFilters, debouncedFilterUpdate]);
+
+  // Simple debounce function
+  function debounce(func: Function, wait: number) {
+    let timeout: NodeJS.Timeout;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
 
 
 
@@ -171,7 +188,7 @@ export default function Home() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">Filter by Cost:</label>
-              <Select value={filters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
+              <Select value={pendingFilters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
@@ -184,7 +201,7 @@ export default function Home() {
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">Services:</label>
-              <Select value={filters.services} onValueChange={(value) => handleFilterChange("services", value)}>
+              <Select value={pendingFilters.services} onValueChange={(value) => handleFilterChange("services", value)}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="All Services" />
                 </SelectTrigger>
@@ -203,7 +220,7 @@ export default function Home() {
 
             <div className="flex items-center space-x-2">
               <label className="text-sm font-medium text-gray-700">State:</label>
-              <Select value={filters.state} onValueChange={(value) => handleFilterChange("state", value)}>
+              <Select value={pendingFilters.state} onValueChange={(value) => handleFilterChange("state", value)}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="All States" />
                 </SelectTrigger>
