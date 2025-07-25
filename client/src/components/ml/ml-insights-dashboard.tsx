@@ -111,7 +111,7 @@ export default function MLInsightsDashboard({
                 {/* Coverage Score - Large Display */}
                 <div className="text-center p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
                   <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600">
-                    {insights.coverage?.totalCoverage?.toFixed(1) || insights.marketAnalysis?.averageRating?.toFixed(1) || "4.2"}
+                    {insights.coverage?.totalCoverage?.toFixed(1) || (insights.marketAnalysis?.averageRating ? insights.marketAnalysis.averageRating.toFixed(1) : "4.2")}
                     {insights.coverage?.totalCoverage ? "%" : "⭐"}
                   </div>
                   <div className="text-sm text-gray-600 mt-1">
