@@ -104,35 +104,23 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
           const chunk = validClinics.slice(currentIndex, currentIndex + chunkSize);
           
           chunk.forEach(clinic => {
-            // Create a custom pin-style marker using DivIcon
+            // Create a beautiful modern pin marker with gradient and shadow
             const pinIcon = L.divIcon({
-              className: 'custom-pin-marker',
+              className: 'beautiful-pin-marker',
               html: `
-                <div style="
-                  width: 20px; 
-                  height: 30px; 
-                  background: #3b82f6; 
-                  border: 2px solid #1e40af;
-                  border-radius: 50% 50% 50% 0;
-                  transform: rotate(-45deg);
-                  margin-left: -10px;
-                  margin-top: -30px;
-                  position: relative;
-                ">
-                  <div style="
-                    width: 8px; 
-                    height: 8px; 
-                    background: white; 
-                    border-radius: 50%;
-                    position: absolute;
-                    top: 4px;
-                    left: 4px;
-                    transform: rotate(45deg);
-                  "></div>
+                <div class="pin-container">
+                  <div class="pin-body">
+                    <div class="pin-inner">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="pin-shadow"></div>
                 </div>
               `,
-              iconSize: [20, 30],
-              iconAnchor: [10, 30]
+              iconSize: [28, 36],
+              iconAnchor: [14, 36]
             });
             
             const marker = L.marker([clinic.latitude, clinic.longitude], { icon: pinIcon })
