@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Globe, MapPin, Users } from "lucide-react";
 import InteractiveMap from "@/components/map/interactive-map";
 import ClinicModal from "@/components/modals/clinic-modal";
-import WelcomeModal from "@/components/modals/welcome-modal";
+import SimpleWelcomeModal from "@/components/modals/simple-welcome-modal";
 import MLInsightsDashboard from "@/components/ml/ml-insights-dashboard";
 import { Clinic } from "@/types/clinic";
 import { apiRequest } from "@/lib/queryClient";
@@ -309,7 +309,7 @@ export default function Home() {
       </div>
 
       {/* Modals */}
-      <WelcomeModal 
+      <SimpleWelcomeModal 
         isOpen={isWelcomeModalOpen}
         onClose={() => setIsWelcomeModalOpen(false)}
         onApplyFilters={handleApplyFilters}
