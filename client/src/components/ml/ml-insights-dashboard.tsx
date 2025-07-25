@@ -130,15 +130,41 @@ export default function MLInsightsDashboard({
 
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-green-50 p-3 rounded-lg">
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Crown className="h-4 w-4 text-green-500" />
-                      <span className="text-xs font-medium text-green-800">Top Retention</span>
+                      <Crown className="h-4 w-4 text-green-600" />
+                      <span className="text-xs font-medium text-green-800">Top 3 Retention in {insights.state || 'US'}</span>
                     </div>
-                    <div className="text-lg font-bold text-green-600">
-                      {insights.highestRetentionClinics?.[0]?.retentionRate || 94.2}%
-                    </div>
-                    <div className="text-xs text-green-600">best in state</div>
+                    {(insights.highestRetentionClinics && insights.highestRetentionClinics.length > 0) ? (
+                      <div className="space-y-2">
+                        {insights.highestRetentionClinics.slice(0, 3).map((clinic: any, index: number) => (
+                          <div key={index} className="bg-white p-2 rounded border border-green-100 hover:shadow-sm transition-shadow">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center space-x-1">
+                                <Badge 
+                                  variant="default"
+                                  className="text-xs bg-green-100 text-green-800"
+                                >
+                                  #{index + 1}
+                                </Badge>
+                                <span className="text-xs font-bold text-green-600">{clinic.retentionRate}%</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                                <span className="text-xs text-gray-600">{clinic.avgRating}</span>
+                              </div>
+                            </div>
+                            <h4 className="font-medium text-xs text-gray-900 mb-1 truncate">{clinic.name}</h4>
+                            <p className="text-xs text-gray-600">{clinic.city} • {clinic.specialization}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="text-lg font-bold text-green-600">94.2%</div>
+                        <div className="text-xs text-green-600">best in state</div>
+                      </div>
+                    )}
                   </div>
 
                   {insights.topRatedCenters && insights.topRatedCenters.length > 0 ? (
@@ -185,40 +211,7 @@ export default function MLInsightsDashboard({
                   )}
                 </div>
 
-                {/* Highest Retention Clinics */}
-                {(insights.highestRetentionClinics?.length > 0 || insights.coverage?.highestRetentionClinics?.length > 0) && (
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Crown className="h-4 w-4 text-green-600" />
-                      <span className="text-xs font-semibold text-green-800">Highest Retention Rate Clinics</span>
-                    </div>
-                    <div className="space-y-2">
-                      {(insights.highestRetentionClinics || insights.coverage?.highestRetentionClinics || []).slice(0, 3).map((clinic: any, index: number) => (
-                        <div key={index} className="bg-white p-2 rounded border border-green-100">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900 truncate">
-                                {clinic.name}
-                              </div>
-                              <div className="text-xs text-gray-600">
-                                {clinic.city} • {clinic.specialization}
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-sm font-bold text-green-600">
-                                {clinic.retentionRate}%
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                                <span className="text-xs text-gray-600">{clinic.avgRating}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+
 
                 {/* Expansion Recommendations */}
                 {insights.expansion?.length > 0 && (
