@@ -160,18 +160,7 @@
   background-repeat: no-repeat;
 }
 
-.marker-shadow {
-  position: absolute;
-  top: 41px;
-  left: -6px;
-  width: 41px;
-  height: 41px;
-  background-image: url('https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png');
-  background-size: 41px 41px;
-  background-repeat: no-repeat;
-  opacity: 0.5;
-  z-index: -1;
-}
+/* Shadow removed per user request */
 
 .leaflet-control-container .leaflet-routing-container-hide {
   display: none;

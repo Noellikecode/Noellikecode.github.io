@@ -108,9 +108,7 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
             const customIcon = L.divIcon({
               className: 'leaflet-style-marker',
               html: `
-                <div class="marker-pin">
-                  <div class="marker-shadow"></div>
-                </div>
+                <div class="marker-pin"></div>
               `,
               iconSize: [25, 41],
               iconAnchor: [12, 41],
