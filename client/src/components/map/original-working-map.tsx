@@ -64,12 +64,20 @@ export default function OriginalWorkingMap({
         });
 
         // Add tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 18,
-        }).addTo(mapInstanceRef.current);
-
-        setMapReady(true);
+        });
+        
+        tileLayer.addTo(mapInstanceRef.current);
+        
+        // Wait for tiles to load before showing as ready
+        tileLayer.on('load', () => {
+          setMapReady(true);
+        });
+        
+        // Fallback in case tiles don't trigger load event
+        setTimeout(() => setMapReady(true), 2000);
 
         // Clear existing markers
         markersRef.current.forEach(marker => {
@@ -89,8 +97,8 @@ export default function OriginalWorkingMap({
             .bindPopup(`
               <div>
                 <h3 style="margin: 0 0 8px 0; font-weight: bold;">${clinic.name}</h3>
-                <p style="margin: 0 0 4px 0; color: #666;">${clinic.address}</p>
-                <p style="margin: 0; color: #666;">${clinic.city}, ${clinic.state}</p>
+                <p style="margin: 0 0 4px 0; color: #666;">${clinic.city}</p>
+                <p style="margin: 0; color: #666;">Click for details</p>
               </div>
             `)
             .on('click', () => onClinicClick(clinic));
@@ -141,7 +149,10 @@ export default function OriginalWorkingMap({
       <div 
         ref={mapRef} 
         className="h-full w-full"
-        style={{ minHeight: '400px' }}
+        style={{ 
+          minHeight: '400px',
+          backgroundColor: '#a7c8ed' // Light blue background while loading
+        }}
       />
       
       {!mapReady && (
