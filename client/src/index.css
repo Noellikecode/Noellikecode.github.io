@@ -92,15 +92,17 @@
   }
 }
 
-/* Performance optimizations for low-end devices */
-.animate-spin {
-  animation: spin 1s linear infinite;
+/* Disable ALL animations for maximum performance */
+*, *::before, *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
 }
 
-/* Faster animations */
+/* Remove transform GPU usage */
 * {
-  animation-duration: 0.3s !important;
-  transition-duration: 0.3s !important;
+  transform: none !important;
 }
 
 /* Leaflet map styling fixes */

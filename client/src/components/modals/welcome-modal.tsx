@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Filter, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 
 interface WelcomeModalProps {
   isOpen: boolean;
@@ -21,31 +20,13 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
     teletherapy: false,
     state: "all",
   });
-  
-  const [showLoadingDelay, setShowLoadingDelay] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // Minimal delay for performance - 1 second only
+  // Show content immediately - no delay
   useEffect(() => {
-    if (!isMapLoading && showLoadingDelay) {
-      // Fast progress animation - 10% every 100ms = 1 second total
-      const progressInterval = setInterval(() => {
-        setLoadingProgress(prev => {
-          if (prev >= 100) {
-            clearInterval(progressInterval);
-            setShowLoadingDelay(false);
-            return 100;
-          }
-          return prev + 10;
-        });
-      }, 100);
-
-      return () => clearInterval(progressInterval);
-    } else if (isMapLoading) {
-      setShowLoadingDelay(true);
-      setLoadingProgress(0);
+    if (!isMapLoading) {
+      // Content appears immediately
     }
-  }, [isMapLoading, showLoadingDelay]);
+  }, [isMapLoading]);
 
   const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -71,158 +52,112 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
                           filters.teletherapy || 
                           filters.state !== "all";
 
-  // Lightweight loading component optimized for low-end devices
+  // Simple loading content
   const LoadingContent = () => (
-    <div className="flex flex-col items-center justify-center py-12 space-y-4">
-      {/* Simple, performant spinner */}
-      <div className="w-12 h-12 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
-      
-      {/* Static progress bar - no complex animations */}
-      <div className="w-48 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-        <div 
-          className="h-full bg-blue-500 transition-all duration-500 ease-out"
-          style={{ width: `${isMapLoading ? 50 : (showLoadingDelay ? loadingProgress : 100)}%` }}
-        ></div>
-      </div>
-      
-      {/* Simple text - no animations */}
-      <div className="text-center space-y-1">
-        <h3 className="text-lg font-medium text-gray-800">
-          {isMapLoading ? "Loading Map" : (showLoadingDelay ? "Almost Ready" : "Ready!")}
-        </h3>
-        <p className="text-gray-600 text-sm">
-          {isMapLoading 
-            ? "Preparing speech therapy centers..." 
-            : (showLoadingDelay ? `${Math.round(loadingProgress)}% complete` : "Starting app...")}
-        </p>
-      </div>
-      
-      {/* Simple dots - no animation */}
-      <div className="flex space-x-1 justify-center">
-        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-        <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
-        <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
+    <div className="flex flex-col items-center justify-center py-8 space-y-3">
+      <div className="w-8 h-8 border-2 border-blue-600 rounded-full"></div>
+      <div className="text-center">
+        <h3 className="text-base font-medium text-gray-800">Loading</h3>
+        <p className="text-gray-600 text-sm">Please wait...</p>
       </div>
     </div>
   );
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-2xl" aria-describedby="welcome-description">
-        {(isMapLoading || showLoadingDelay) ? (
+      <DialogContent className="max-w-xl" aria-describedby="welcome-description">
+        {isMapLoading ? (
           <LoadingContent />
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-xl">
-                <Globe className="h-6 w-6 text-primary" />
-                Welcome to North American Speech Access App
+              <DialogTitle className="text-lg font-medium">
+                Welcome to Speech Access App
               </DialogTitle>
-              <DialogDescription id="welcome-description" className="text-base">
-                Discover speech therapy resources from our database of <strong>{totalClinics}+ verified centers</strong> across North America.
+              <DialogDescription id="welcome-description" className="text-sm text-gray-600">
+                {totalClinics}+ verified centers across North America
               </DialogDescription>
             </DialogHeader>
         
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Filter className="h-5 w-5" />
-                Find Speech Therapy Centers
-              </CardTitle>
-              <CardDescription>
-                Choose your preferences to find the most relevant speech therapy centers in your state.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    State
-                  </label>
-                  <Select value={filters.state} onValueChange={(value) => handleFilterChange("state", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All states" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      <SelectItem value="all">All States</SelectItem>
-                      {allStates.map((state) => (
-                        <SelectItem key={state} value={state}>{state}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="space-y-4">
+              <div className="border rounded-lg p-4">
+                <h3 className="font-medium text-base mb-3">Find Centers</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium">State</label>
+                    <Select value={filters.state} onValueChange={(value) => handleFilterChange("state", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All states" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60">
+                        <SelectItem value="all">All States</SelectItem>
+                        {allStates.map((state) => (
+                          <SelectItem key={state} value={state}>{state}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Cost Level</label>
-                  <Select value={filters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All cost levels" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Cost Levels</SelectItem>
-                      <SelectItem value="low-cost">Low Cost</SelectItem>
-                      <SelectItem value="market-rate">Market Rate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div>
+                    <label className="text-sm font-medium">Cost Level</label>
+                    <Select value={filters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All cost levels" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Cost Levels</SelectItem>
+                        <SelectItem value="low-cost">Low Cost</SelectItem>
+                        <SelectItem value="market-rate">Market Rate</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Services</label>
-                  <Select value={filters.services} onValueChange={(value) => handleFilterChange("services", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All services" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Services</SelectItem>
-                      <SelectItem value="speech-therapy">Speech Therapy</SelectItem>
-                      <SelectItem value="language-therapy">Language Therapy</SelectItem>
-                      <SelectItem value="voice-therapy">Voice Therapy</SelectItem>
-                      <SelectItem value="stuttering">Stuttering</SelectItem>
-                      <SelectItem value="apraxia">Apraxia</SelectItem>
-                      <SelectItem value="feeding-therapy">Feeding Therapy</SelectItem>
-                      <SelectItem value="social-skills">Social Skills</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex items-center space-x-2 pt-6">
-                  <Checkbox 
-                    id="welcome-teletherapy" 
-                    checked={filters.teletherapy}
-                    onCheckedChange={(checked) => handleFilterChange("teletherapy", checked)}
-                  />
-                  <label htmlFor="welcome-teletherapy" className="text-sm font-medium">
-                    Teletherapy Available
-                  </label>
+                  <div>
+                    <label className="text-sm font-medium">Services</label>
+                    <Select value={filters.services} onValueChange={(value) => handleFilterChange("services", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All services" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Services</SelectItem>
+                        <SelectItem value="speech-therapy">Speech Therapy</SelectItem>
+                        <SelectItem value="language-therapy">Language Therapy</SelectItem>
+                        <SelectItem value="voice-therapy">Voice Therapy</SelectItem>
+                        <SelectItem value="stuttering">Stuttering</SelectItem>
+                        <SelectItem value="apraxia">Apraxia</SelectItem>
+                        <SelectItem value="feeding-therapy">Feeding Therapy</SelectItem>
+                        <SelectItem value="social-skills">Social Skills</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="welcome-teletherapy" 
+                      checked={filters.teletherapy}
+                      onCheckedChange={(checked) => handleFilterChange("teletherapy", checked)}
+                    />
+                    <label htmlFor="welcome-teletherapy" className="text-sm font-medium">
+                      Teletherapy Available
+                    </label>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          
-          <div className="flex justify-between items-center pt-4 border-t">
-            <div className="text-sm text-muted-foreground">
-              {hasActiveFilters ? (
-                <span className="flex items-center gap-1">
-                  <Filter className="h-4 w-4" />
-                  Filters will be applied
-                </span>
-              ) : (
-                <span>Showing all {totalClinics}+ centers</span>
-              )}
+              
+              <div className="flex justify-between items-center pt-4 border-t">
+                <div className="text-sm text-gray-600">
+                  {hasActiveFilters ? "Filters will be applied" : `Showing all ${totalClinics}+ centers`}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={onClose}>
+                    Skip
+                  </Button>
+                  <Button onClick={handleApplyFilters}>
+                    {hasActiveFilters ? "Apply Filters" : "Explore Map"}
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onClose}>
-                Skip
-              </Button>
-              <Button onClick={handleApplyFilters}>
-                <Filter className="h-4 w-4 mr-2" />
-                {hasActiveFilters ? "Apply Filters" : "View Map"}
-              </Button>
-            </div>
-          </div>
-        </div>
           </>
         )}
       </DialogContent>
