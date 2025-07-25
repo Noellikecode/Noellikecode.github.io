@@ -116,7 +116,14 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
             const marker = L.marker([clinic.latitude, clinic.longitude], { icon: customIcon })
               .addTo(map)
               .bindPopup(`<strong>${clinic.name}</strong><br/>${clinic.city}`)
-              .on('click', () => onClinicClick(clinic));
+              .on('click', () => {
+                // Center the popup on screen when clinic is clicked
+                map.setView([clinic.latitude, clinic.longitude], Math.max(map.getZoom(), 12), {
+                  animate: true,
+                  duration: 0.5
+                });
+                onClinicClick(clinic);
+              });
           });
           
           currentIndex += chunkSize;

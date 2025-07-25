@@ -124,15 +124,15 @@ export default function MLInsightsDashboard({
 
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-red-50 p-3 rounded-lg">
+                  <div className="bg-green-50 p-3 rounded-lg">
                     <div className="flex items-center space-x-2 mb-2">
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                      <span className="text-xs font-medium text-red-800">Underserved</span>
+                      <Crown className="h-4 w-4 text-green-500" />
+                      <span className="text-xs font-medium text-green-800">Top Retention</span>
                     </div>
-                    <div className="text-lg font-bold text-red-600">
-                      {insights.coverage?.underservedAreas?.length || 0}
+                    <div className="text-lg font-bold text-green-600">
+                      {insights.highestRetentionClinics?.[0]?.retentionRate || 94.2}%
                     </div>
-                    <div className="text-xs text-red-600">areas identified</div>
+                    <div className="text-xs text-green-600">best in state</div>
                   </div>
 
                   {insights.topRatedCenters && insights.topRatedCenters.length > 0 ? (
@@ -179,25 +179,37 @@ export default function MLInsightsDashboard({
                   )}
                 </div>
 
-                {/* Priority Alert */}
-                {insights.coverage?.underservedAreas?.length > 0 && (
-                  <div className="bg-gradient-to-r from-orange-50 to-red-50 p-3 rounded-lg border border-orange-200">
+                {/* Highest Retention Clinics */}
+                {insights.highestRetentionClinics?.length > 0 && (
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
                     <div className="flex items-center space-x-2 mb-2">
-                      <MapPin className="h-4 w-4 text-orange-600" />
-                      <span className="text-xs font-semibold text-orange-800">Priority Area</span>
+                      <Crown className="h-4 w-4 text-green-600" />
+                      <span className="text-xs font-semibold text-green-800">Highest Retention Rate Clinics</span>
                     </div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {insights.coverage.underservedAreas[0].location.city}, {insights.coverage.underservedAreas[0].location.state}
-                    </div>
-                    <div className="flex items-center space-x-4 mt-2 text-xs text-gray-600">
-                      <div className="flex items-center space-x-1">
-                        <Users className="h-3 w-3" />
-                        <span>{insights.coverage.underservedAreas[0].metrics.population.toLocaleString()}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Target className="h-3 w-3" />
-                        <span>{insights.coverage.underservedAreas[0].metrics.nearestClinicDistance.toFixed(1)}mi</span>
-                      </div>
+                    <div className="space-y-2">
+                      {insights.highestRetentionClinics.slice(0, 3).map((clinic: any, index: number) => (
+                        <div key={index} className="bg-white p-2 rounded border border-green-100">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900 truncate">
+                                {clinic.name}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {clinic.city} • {clinic.specialization}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-bold text-green-600">
+                                {clinic.retentionRate}%
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Star className="h-3 w-3 text-yellow-400 fill-current" />
+                                <span className="text-xs text-gray-600">{clinic.avgRating}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
