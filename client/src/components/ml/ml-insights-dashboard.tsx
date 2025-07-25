@@ -245,6 +245,9 @@ export default function MLInsightsDashboard({
 
                 {/* Filter Info */}
                 <div className="text-xs text-gray-500 pt-2 border-t border-gray-200">
+                  <div className="mb-1 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800">
+                    <strong>Disclaimer:</strong> Analysis based on database characteristics only. Contact centers directly for current services, availability, and verification. Not clinical recommendations.
+                  </div>
                   {filters.state && filters.state !== "all" ? (
                     <span>Filtered to {filters.state} • </span>
                   ) : null}

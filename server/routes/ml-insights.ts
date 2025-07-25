@@ -304,54 +304,15 @@ async function generateStateSpecificInsights(state: string) {
   // Get actual clinic count from database for the state
   const actualStateData = stateData[state as keyof typeof stateData];
   
+  // Use actual database analysis only - no synthetic data for NSA website
   const data = actualStateData || {
-    topCenters: [
-      {
-        id: 1,
-        name: `${state} Speech Therapy Center`,
-        city: "Major City",
-        rating: 4.5,
-        reviewCount: 85,
-        tier: "Gold",
-        specialties: ["Speech Therapy", "Language Development", "Communication Skills"],
-        highlights: "Experienced therapists with proven results",
-        testimonial: "Great progress in communication skills development",
-        priceRange: "$100-150/session",
-        waitTime: "2-3 weeks"
-      },
-      {
-        id: 2,
-        name: `${state} Children's Speech Clinic`,
-        city: "Regional Hub", 
-        rating: 4.3,
-        reviewCount: 67,
-        tier: "Silver",
-        specialties: ["Pediatric Speech", "Early Intervention", "Family Support"],
-        highlights: "Child-focused approach with family involvement",
-        testimonial: "Wonderful experience for our child's speech development",
-        priceRange: "$90-130/session",
-        waitTime: "1-2 weeks"
-      },
-      {
-        id: 3,
-        name: `${state} Adult Communication Center`,
-        city: "Metro Area",
-        rating: 4.2,
-        reviewCount: 52,
-        tier: "Silver",
-        specialties: ["Adult Therapy", "Voice Training", "Professional Communication"],
-        highlights: "Professional development and rehabilitation services",
-        testimonial: "Helped me regain confidence in speaking",
-        priceRange: "$110-140/session", 
-        waitTime: "1-3 weeks"
-      }
-    ],
+    topCenters: [],
     marketAnalysis: { 
-      totalCenters: Math.floor(Math.random() * 200) + 50, // Random but realistic number
-      averageRating: 4.1 + Math.random() * 0.4, // 4.1-4.5 range
-      competitionLevel: "Moderate", 
-      priceRange: "$85-160/session", 
-      demandTrends: "Steady growth with increasing awareness" 
+      totalCenters: 0,
+      averageRating: 0,
+      competitionLevel: "Analysis pending", 
+      priceRange: "Contact centers directly for pricing", 
+      demandTrends: "See National Stuttering Association resources for current data" 
     }
   };
 
@@ -363,9 +324,9 @@ async function generateStateSpecificInsights(state: string) {
       marketAnalysis: data.marketAnalysis,
       personalizedRecommendations: [
         {
-          title: `Best ${state} Centers Analysis`,
-          description: `Top 3 highest-rated speech therapy centers based on ${data.topCenters.reduce((sum, center) => sum + center.reviewCount, 0)} verified reviews`,
-          actionable: "Contact top-rated centers for consultations",
+          title: `${state} Speech Therapy Resources`,
+          description: `Database contains verified speech therapy providers. Please research and contact centers directly for current services and availability.`,
+          actionable: "Visit National Stuttering Association resources for guidance on selecting appropriate therapy services",
           priority: "high"
         }
       ],
