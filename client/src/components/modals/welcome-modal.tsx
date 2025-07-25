@@ -65,7 +65,7 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-xl" aria-describedby="welcome-description">
+      <DialogContent className="max-w-xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50" aria-describedby="welcome-description">
         {isMapLoading ? (
           <LoadingContent />
         ) : (
@@ -83,13 +83,13 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
               <div className="border rounded-lg p-4">
                 <h3 className="font-medium text-base mb-3">Find Centers</h3>
                 <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium">State</label>
+                  <div className="relative">
+                    <label className="text-sm font-medium block mb-1">State</label>
                     <Select value={filters.state} onValueChange={(value) => handleFilterChange("state", value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="All states" />
                       </SelectTrigger>
-                      <SelectContent className="max-h-60">
+                      <SelectContent className="max-h-60 z-[9999]" position="popper" sideOffset={5}>
                         <SelectItem value="all">All States</SelectItem>
                         {allStates.map((state) => (
                           <SelectItem key={state} value={state}>{state}</SelectItem>
@@ -98,13 +98,13 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
                     </Select>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium">Cost Level</label>
+                  <div className="relative">
+                    <label className="text-sm font-medium block mb-1">Cost Level</label>
                     <Select value={filters.costLevel} onValueChange={(value) => handleFilterChange("costLevel", value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="All cost levels" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[9999]" position="popper" sideOffset={5}>
                         <SelectItem value="all">All Cost Levels</SelectItem>
                         <SelectItem value="low-cost">Low Cost</SelectItem>
                         <SelectItem value="market-rate">Market Rate</SelectItem>
@@ -112,13 +112,13 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
                     </Select>
                   </div>
 
-                  <div>
-                    <label className="text-sm font-medium">Services</label>
+                  <div className="relative">
+                    <label className="text-sm font-medium block mb-1">Services</label>
                     <Select value={filters.services} onValueChange={(value) => handleFilterChange("services", value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="All services" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[9999]" position="popper" sideOffset={5}>
                         <SelectItem value="all">All Services</SelectItem>
                         <SelectItem value="speech-therapy">Speech Therapy</SelectItem>
                         <SelectItem value="language-therapy">Language Therapy</SelectItem>

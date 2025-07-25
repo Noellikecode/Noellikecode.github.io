@@ -123,13 +123,31 @@
   border: none !important;
 }
 
-/* Fix dropdown z-index issues over map */
+/* Fix dropdown z-index issues over modal and map */
 [data-radix-popper-content-wrapper] {
-  z-index: 1000 !important;
+  z-index: 9999 !important;
 }
 
 [data-radix-select-content] {
-  z-index: 1000 !important;
+  z-index: 9999 !important;
+  position: fixed !important;
+}
+
+[data-radix-select-viewport] {
+  z-index: 9999 !important;
+}
+
+/* Fix modal positioning */
+[data-radix-dialog-overlay] {
+  z-index: 5000 !important;
+}
+
+[data-radix-dialog-content] {
+  z-index: 5001 !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 .relative .absolute {
