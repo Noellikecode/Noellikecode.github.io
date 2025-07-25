@@ -92,16 +92,18 @@
   }
 }
 
-/* Disable ALL animations for maximum performance - but allow Leaflet to work */
-*, *::before, *::after {
+/* Disable UI animations for performance - but preserve map functionality */
+*:not([class*="leaflet"]):not(.leaflet-container *), 
+*:not([class*="leaflet"]):not(.leaflet-container *)::before, 
+*:not([class*="leaflet"]):not(.leaflet-container *)::after {
   animation-duration: 0s !important;
   animation-delay: 0s !important;
   transition-duration: 0s !important;
   transition-delay: 0s !important;
 }
 
-/* Remove transform GPU usage - but allow Leaflet transforms */
-*:not(.leaflet-container):not(.leaflet-tile):not(.leaflet-marker-icon):not(.leaflet-marker-shadow) {
+/* Remove transforms from non-map elements only */
+*:not([class*="leaflet"]):not(.leaflet-container *) {
   transform: none !important;
 }
 

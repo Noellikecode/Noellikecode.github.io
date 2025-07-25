@@ -63,7 +63,16 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
           center: [39.8283, -98.5795],
           zoom: 4,
           attributionControl: true,
-          zoomControl: true
+          zoomControl: true,
+          scrollWheelZoom: true,
+          doubleClickZoom: true,
+          boxZoom: true,
+          keyboard: true,
+          dragging: true,
+          touchZoom: true,
+          zoomAnimation: true,
+          fadeAnimation: true,
+          markerZoomAnimation: true
         });
 
         // Add OpenStreetMap tiles
@@ -83,21 +92,40 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
 
         console.log(`Adding ${validClinics.length} markers to map`);
 
-        validClinics.forEach((clinic, index) => {
-          if (index < 1000) { // Limit to first 1000 for performance
+        // Add markers in chunks for better performance
+        const chunkSize = 100;
+        let currentIndex = 0;
+        
+        const addMarkerChunk = () => {
+          const chunk = validClinics.slice(currentIndex, currentIndex + chunkSize);
+          
+          chunk.forEach(clinic => {
             const marker = L.marker([clinic.latitude, clinic.longitude])
               .addTo(map)
               .bindPopup(`<strong>${clinic.name}</strong><br/>${clinic.city}`)
               .on('click', () => onClinicClick(clinic));
+          });
+          
+          currentIndex += chunkSize;
+          
+          if (currentIndex < validClinics.length && currentIndex < 2000) {
+            setTimeout(addMarkerChunk, 10); // Small delay between chunks
           }
-        });
+        };
+        
+        addMarkerChunk();
 
-        // Fit to markers if any exist
+        // Fit to markers if any exist - use sample for performance
         if (validClinics.length > 0) {
+          // Use every 10th marker for bounds calculation to improve performance
+          const sampleClinics = validClinics.filter((_, index) => index % 10 === 0);
           const group = new L.FeatureGroup(
-            validClinics.slice(0, 1000).map(c => L.marker([c.latitude, c.longitude]))
+            sampleClinics.map(c => L.marker([c.latitude, c.longitude]))
           );
-          map.fitBounds(group.getBounds(), { padding: [20, 20] });
+          map.fitBounds(group.getBounds(), { 
+            padding: [20, 20],
+            maxZoom: 10 // Don't zoom too close initially
+          });
         }
 
         // Force map to invalidate size after setup
