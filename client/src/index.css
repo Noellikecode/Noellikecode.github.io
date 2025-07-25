@@ -155,7 +155,7 @@
   position: relative;
   width: 25px;
   height: 41px;
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAApCAYAAADAk4LOAAAFgUlEQVR4Aa1XA5BjWRTN2oW17d3YaZtr2962HUzbXNfN1+v1ej3tz1evXq/X6/VWr3e9Xmu8Xmu8Xmu8Xq/X6/X6/XaL1+v1W71er9fv9Xr9Xr/X7zfb7/V5vV2/V2vV2rV2rVWr1er1WpXPNqqsWquWlWKlWqpVqZVqjVqlVKlTJ1SkVSqUSrTExITvjt3vnfPee9/73n3X3+7u7l7v7a63Wm632+22u+1Wq4VCoTAa8H5/k8nE7/d7fL5fsXa7bXU6HdNsNq2dnZ3d2+323u2VKxcIwGma5dePMcZYOEfnvYROV1Uh6A4mh1Z+g5J8E8+FzRf8JeWJzHJJ8UJxjdNxZbzwPWQf8O3eTR8R4fBBhA/Q7lV7iTlb7sn/t3l7k/q7u7Z7e5vaB9b98H1uH3/v7+7/X9+6J/oPV7efW91++L7c/3h95/v3R953f+j9yL/2H3g/eT937/e97737ne+87z7ve859z3ne8+73vOf9/737vO+677nPe973vec973/P+8f+kbv7e7f2fnr3v3v793/v3X3/v7t3L2/u7u3v7e7u7u7t7vv7e7u7u7u7u7t7e7u7u7u7u3v7u7u7uzs7O7u7u7u7u7s7O7s7Ozs7O3t7OxcLOxcG5kN');
+  background-image: url('https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png');
   background-size: 25px 41px;
   background-repeat: no-repeat;
 }
@@ -166,7 +166,7 @@
   left: -6px;
   width: 41px;
   height: 41px;
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAACMUlEQVRIx93WPW+CQRQF4DMyQzKhE1sLG2sbG1sbG2uxsbGxsbGxsbGxsbGxtbWxsbW1tbWxsbGxsbGxsbGxsbGxsbGxsbGxtbWxsbW1tbWxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsbGxsb');
+  background-image: url('https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png');
   background-size: 41px 41px;
   background-repeat: no-repeat;
   opacity: 0.5;
