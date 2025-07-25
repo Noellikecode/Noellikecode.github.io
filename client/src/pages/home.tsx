@@ -4,20 +4,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import { Globe, Plus, MapPin, Users } from "lucide-react";
+import { Globe, MapPin, Users } from "lucide-react";
 import InteractiveMap from "@/components/map/interactive-map";
 import ClinicModal from "@/components/modals/clinic-modal";
-import SubmissionModal from "@/components/modals/submission-modal";
 import WelcomeModal from "@/components/modals/welcome-modal";
 import MLInsightsDashboard from "@/components/ml/ml-insights-dashboard";
 import { Clinic } from "@/types/clinic";
 import { apiRequest } from "@/lib/queryClient";
-import { useLocation } from "wouter";
+
 
 export default function Home() {
-  const [, setLocation] = useLocation();
+
   const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
-  const [isSubmissionModalOpen, setIsSubmissionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(true);
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
   const [isMlInsightsVisible, setIsMlInsightsVisible] = useState(false);
@@ -172,11 +170,9 @@ export default function Home() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Button onClick={() => setIsSubmissionModalOpen(true)} className="bg-primary hover:bg-primary/90">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Location
-              </Button>
-
+              <div className="text-sm text-gray-600">
+                {clinics.length > 0 && `${clinics.length} Centers`}
+              </div>
             </div>
           </div>
         </div>
@@ -327,10 +323,7 @@ export default function Home() {
         onClose={() => setSelectedClinic(null)}
       />
       
-      <SubmissionModal 
-        isOpen={isSubmissionModalOpen}
-        onClose={() => setIsSubmissionModalOpen(false)}
-      />
+
 
       {/* ML Insights Dashboard - Only show after map loads and welcome modal is closed */}
       {!isLoading && !isWelcomeModalOpen && (
@@ -342,22 +335,7 @@ export default function Home() {
         />
       )}
 
-      {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t md:hidden z-30">
-        <div className="flex justify-around py-2">
-          <button className="flex flex-col items-center py-2 px-4 text-primary">
-            <MapPin className="h-5 w-5" />
-            <span className="text-xs mt-1">Map</span>
-          </button>
-          <button 
-            className="flex flex-col items-center py-2 px-4 text-gray-600"
-            onClick={() => setIsSubmissionModalOpen(true)}
-          >
-            <Plus className="h-5 w-5" />
-            <span className="text-xs mt-1">Add</span>
-          </button>
-        </div>
-      </div>
+
     </div>
   );
 }

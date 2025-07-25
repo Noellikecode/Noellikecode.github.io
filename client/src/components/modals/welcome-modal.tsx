@@ -127,7 +127,7 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl" aria-describedby="welcome-description">
         {(isMapLoading || showLoadingDelay) ? (
           <LoadingContent />
         ) : (
@@ -137,7 +137,7 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
                 <Globe className="h-6 w-6 text-primary" />
                 Welcome to North American Speech Access App
               </DialogTitle>
-              <DialogDescription className="text-base">
+              <DialogDescription id="welcome-description" className="text-base">
                 Discover speech therapy resources from our database of <strong>{totalClinics}+ verified centers</strong> across North America.
               </DialogDescription>
             </DialogHeader>
