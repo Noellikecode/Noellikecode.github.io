@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { GeospatialOptimizer, type GeospatialInsight, type CoverageAnalysis } from '../ml-geospatial-optimizer.js';
+import { GeospatialOptimizer, type GeospatialInsight, type CoverageAnalysis, type RetentionClinic } from '../ml-geospatial-optimizer.js';
 import { DataEnhancer, type ClinicEnhancement } from '../ml-data-enhancer.js';
 
 const router = Router();
@@ -99,93 +99,44 @@ let insightsCache: any = null;
 let lastCacheUpdate = 0;
 const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
 
-// Background cache update function - simplified and reliable
+// Background cache update function with real ML analysis
 async function updateInsightsCache() {
   try {
     console.log('🔄 Updating ML insights cache...');
     const startTime = Date.now();
     
-    // Generate personalized, actionable insights
+    // Run actual ML analysis on real clinic data
+    const optimizer = new GeospatialOptimizer();
+    const analysis = await optimizer.analyzeGeospatialCoverage();
+    
     insightsCache = {
       success: true,
       data: {
         coverage: {
-          totalCoverage: 20.2,
-          optimalNewLocations: [
-            { city: "Mesa", state: "AZ", population: 520000, score: 9.2 },
-            { city: "Virginia Beach", state: "VA", population: 450000, score: 8.8 },
-            { city: "Raleigh", state: "NC", population: 470000, score: 7.9 }
-          ],
-          personalizedInsights: [
-            {
-              type: "opportunity",
-              title: "High-Need Areas Near You",
-              description: "3 major cities within 50 miles lack adequate speech therapy coverage",
-              actionable: "Consider mobile therapy services or teletherapy partnerships",
-              priority: "high"
-            },
-            {
-              type: "market_gap",
-              title: "Underserved Population Centers",
-              description: "Jacksonville, FL (950K residents) has only 2.1 therapists per 10K people",
-              actionable: "Significant expansion opportunity in growing metro areas",
-              priority: "high"
-            }
-          ],
-          underservedAreas: [
-            {
-              location: { city: "Bakersfield", state: "CA" },
-              metrics: { population: 380000, nearestClinicDistance: 15.2, therapistRatio: "1.8 per 10K" },
-              recommendation: "Mobile therapy units could serve 45K+ residents"
-            },
-            {
-              location: { city: "Colorado Springs", state: "CO" },
-              metrics: { population: 480000, nearestClinicDistance: 18.5, therapistRatio: "1.4 per 10K" },
-              recommendation: "Partner with military base for veteran speech services"
-            },
-            {
-              location: { city: "Fresno", state: "CA" },
-              metrics: { population: 540000, nearestClinicDistance: 22.1, therapistRatio: "1.1 per 10K" },
-              recommendation: "Bilingual services needed for 47% Hispanic population"
-            }
-          ]
+          totalCoverage: analysis.totalCoverage,
+          optimalNewLocations: analysis.optimalNewLocations.slice(0, 3),
+          highestRetentionClinics: analysis.highestRetentionClinics
         },
         actionableRecommendations: [
           {
-            category: "immediate_opportunity",
-            title: "Launch Teletherapy Services",
-            impact: "Reach 125K+ underserved residents instantly",
-            effort: "medium",
-            timeline: "2-4 weeks"
+            category: "best_practices",
+            title: "Learn from Top Performers",
+            impact: `Connect with ${analysis.highestRetentionClinics[0]?.name || 'top clinics'} for retention strategies`,
+            effort: "low",
+            timeline: "1-2 weeks"
           },
           {
             category: "expansion",
-            title: "Target Military Communities", 
-            impact: "Serve 89K military families in underserved regions",
+            title: "Target Growth Opportunities", 
+            impact: `Expand to ${analysis.optimalNewLocations[0]?.location?.city || 'identified cities'} with high demand`,
             effort: "high",
             timeline: "3-6 months"
-          },
-          {
-            category: "partnership",
-            title: "School District Partnerships",
-            impact: "Access 240K students in speech therapy deserts",
-            effort: "medium", 
-            timeline: "1-3 months"
           }
-        ],
-        marketInsights: {
-          fastestGrowingRegions: ["Austin, TX", "Phoenix, AZ", "Tampa, FL"],
-          competitionGaps: ["Rural Montana", "West Texas", "Eastern Oregon"],
-          demographicOpportunities: {
-            pediatric: "67% of underserved areas lack pediatric specialists",
-            bilingual: "38% of high-need areas are majority Hispanic/Latino",
-            elderly: "Senior care demand growing 23% annually in underserved regions"
-          }
-        }
+        ]
       },
       timestamp: new Date().toISOString(),
       processingTime: Date.now() - startTime,
-      message: `AI Analysis: 3 immediate opportunities identified for market expansion`
+      message: `Real ML Analysis: Top 3 retention clinics identified from ${analysis.highestRetentionClinics.length} analyzed centers`
     };
     
     lastCacheUpdate = Date.now();

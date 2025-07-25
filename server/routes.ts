@@ -245,29 +245,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           densityScore: 94.1,
           accessibilityRating: "Excellent"
         },
-        highestRetentionClinics: [
-          {
-            name: "Pacific Speech & Language Center",
-            city: "San Francisco",
-            retentionRate: 94.2,
-            specialization: "Pediatric Speech Development",
-            avgRating: 4.9
-          },
-          {
-            name: "Golden State Speech Therapy",
-            city: "Los Angeles", 
-            retentionRate: 91.8,
-            specialization: "Adult Neurological Recovery",
-            avgRating: 4.8
-          },
-          {
-            name: "Central Valley Communication Center",
-            city: "Fresno",
-            retentionRate: 89.5,
-            specialization: "Bilingual Speech Services",
-            avgRating: 4.7
+        highestRetentionClinics: await (async () => {
+          try {
+            const optimizer = new (await import('./ml-geospatial-optimizer.js')).GeospatialOptimizer();
+            const analysis = await optimizer.analyzeGeospatialCoverage();
+            return analysis.highestRetentionClinics.slice(0, 3);
+          } catch (error) {
+            console.error('Error getting retention clinics:', error);
+            return [];
           }
-        ],
+        })(),
         recommendations: [
           "Connect with highest-rated centers for best practices",
           "Increase teletherapy coverage in Central Valley",
