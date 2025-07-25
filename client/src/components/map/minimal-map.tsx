@@ -104,8 +104,20 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
           const chunk = validClinics.slice(currentIndex, currentIndex + chunkSize);
           
           chunk.forEach(clinic => {
-            // Use standard Leaflet markers (same as original deployment)
-            const marker = L.marker([clinic.latitude, clinic.longitude])
+            // Create custom marker that looks exactly like standard Leaflet markers
+            const customIcon = L.divIcon({
+              className: 'leaflet-style-marker',
+              html: `
+                <div class="marker-pin">
+                  <div class="marker-shadow"></div>
+                </div>
+              `,
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34]
+            });
+            
+            const marker = L.marker([clinic.latitude, clinic.longitude], { icon: customIcon })
               .addTo(map)
               .bindPopup(`<strong>${clinic.name}</strong><br/>${clinic.city}`)
               .on('click', () => onClinicClick(clinic));
