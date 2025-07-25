@@ -105,12 +105,13 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
           
           chunk.forEach(clinic => {
             // Create custom marker that looks exactly like standard Leaflet markers
-            // Check if welcome modal is still showing (basic heuristic)
-            const welcomeModalVisible = document.querySelector('[role="dialog"]') !== null;
-            const shadowClass = welcomeModalVisible ? 'no-shadow' : 'with-shadow';
+            // Check if welcome modal is still showing by looking for specific modal elements
+            const welcomeModalVisible = document.querySelector('.welcome-modal') !== null || 
+                                      document.querySelector('[data-state="open"]') !== null ||
+                                      document.body.style.pointerEvents === 'none';
             
             const customIcon = L.divIcon({
-              className: `leaflet-style-marker ${shadowClass}`,
+              className: `leaflet-style-marker ${welcomeModalVisible ? 'no-shadow' : 'with-shadow'}`,
               html: `
                 <div class="marker-pin">
                   <div class="marker-shadow"></div>
