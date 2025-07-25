@@ -188,7 +188,7 @@ export default function Home() {
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
-                <SelectContent className="z-[100]" position="popper" side="bottom" align="start" sideOffset={4}>
+                <SelectContent className="z-[100]">
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="low-cost">Low Cost</SelectItem>
                   <SelectItem value="market-rate">Market Rate</SelectItem>
@@ -201,7 +201,7 @@ export default function Home() {
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="All Services" />
                 </SelectTrigger>
-                <SelectContent className="z-[100]" position="popper" side="bottom" align="start" sideOffset={4}>
+                <SelectContent className="z-[100]">
                   <SelectItem value="all">All Services</SelectItem>
                   <SelectItem value="speech-therapy">Speech Therapy</SelectItem>
                   <SelectItem value="language-therapy">Language Therapy</SelectItem>
@@ -220,7 +220,7 @@ export default function Home() {
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="All States" />
                 </SelectTrigger>
-                <SelectContent className="z-[100]" position="popper" side="bottom" align="start" sideOffset={4}>
+                <SelectContent className="z-[100]">
                   <SelectItem value="all">All States</SelectItem>
                   <SelectItem value="Alabama">Alabama</SelectItem>
                   <SelectItem value="Alaska">Alaska</SelectItem>
