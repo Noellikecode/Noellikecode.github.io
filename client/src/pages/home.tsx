@@ -314,16 +314,13 @@ export default function Home() {
         onClose={() => setIsWelcomeModalOpen(false)}
         onApplyFilters={handleApplyFilters}
         totalClinics={clinics.length}
-        isMapLoading={isLoading || !clinics}
+        isMapLoading={isLoading}
       />
       
       <ClinicModal 
-        clinic={selectedClinic} 
-        isOpen={!!selectedClinic}
+        clinic={selectedClinic}
         onClose={() => setSelectedClinic(null)}
       />
-      
-
 
       {/* ML Insights Dashboard - Only show after map loads and welcome modal is closed */}
       {!isLoading && !isWelcomeModalOpen && (
