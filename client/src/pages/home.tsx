@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { Globe, MapPin, Users } from "lucide-react";
-import InteractiveMap from "@/components/map/interactive-map";
+import OriginalWorkingMap from "@/components/map/original-working-map";
 import ClinicModal from "@/components/modals/clinic-modal";
 import SimpleWelcomeModal from "@/components/modals/simple-welcome-modal";
 import MLInsightsDashboard from "@/components/ml/ml-insights-dashboard";
@@ -298,13 +298,12 @@ export default function Home() {
 
       {/* Map Container - Takes remaining full height */}
       <div className="flex-1 min-h-0">
-        <InteractiveMap 
+        <OriginalWorkingMap 
           clinics={clinics}
           filteredClinics={filteredClinics} 
           onClinicClick={setSelectedClinic}
           isLoading={isLoading}
           selectedState={filters.state}
-          getStateBounds={getStateBounds}
         />
       </div>
 
