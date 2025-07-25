@@ -92,6 +92,17 @@
   }
 }
 
+/* Performance optimizations for low-end devices */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Faster animations */
+* {
+  animation-duration: 0.3s !important;
+  transition-duration: 0.3s !important;
+}
+
 /* Leaflet map styling fixes */
 .leaflet-container {
   height: 100% !important;

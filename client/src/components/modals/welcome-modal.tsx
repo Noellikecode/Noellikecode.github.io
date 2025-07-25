@@ -25,10 +25,10 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
   const [showLoadingDelay, setShowLoadingDelay] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // Add 5-second delay after map loads before showing content
+  // Minimal delay for performance - 1 second only
   useEffect(() => {
     if (!isMapLoading && showLoadingDelay) {
-      // Start progress animation
+      // Fast progress animation - 10% every 100ms = 1 second total
       const progressInterval = setInterval(() => {
         setLoadingProgress(prev => {
           if (prev >= 100) {
@@ -36,7 +36,7 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
             setShowLoadingDelay(false);
             return 100;
           }
-          return prev + 2; // 2% every 100ms = 5 seconds total
+          return prev + 10;
         });
       }, 100);
 
@@ -71,56 +71,37 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
                           filters.teletherapy || 
                           filters.state !== "all";
 
-  // Beautiful fluid loading component
+  // Lightweight loading component optimized for low-end devices
   const LoadingContent = () => (
-    <div className="flex flex-col items-center justify-center py-16 space-y-6">
-      {/* Animated Logo/Icon */}
-      <div className="relative">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-spin-slow animate-pulse-glow"></div>
-        <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
-          <Globe className="h-8 w-8 text-gray-600 animate-pulse" />
-        </div>
+    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+      {/* Simple, performant spinner */}
+      <div className="w-12 h-12 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
+      
+      {/* Static progress bar - no complex animations */}
+      <div className="w-48 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-blue-500 transition-all duration-500 ease-out"
+          style={{ width: `${isMapLoading ? 50 : (showLoadingDelay ? loadingProgress : 100)}%` }}
+        ></div>
       </div>
       
-      {/* Fluid Wave Animation */}
-      <div className="relative w-64 h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-full opacity-80"></div>
-        <div className="absolute top-0 left-0 h-full w-16 bg-gradient-to-r from-transparent via-white to-transparent opacity-70 animate-wave"></div>
-      </div>
-      
-      {/* Loading Text with Typing Effect */}
-      <div className="text-center space-y-2">
-        <h3 className="text-xl font-semibold text-gray-800 animate-pulse">
-          {isMapLoading ? "Loading Your Speech Therapy Map" : "Map Ready! Preparing Interface..."}
+      {/* Simple text - no animations */}
+      <div className="text-center space-y-1">
+        <h3 className="text-lg font-medium text-gray-800">
+          {isMapLoading ? "Loading Map" : (showLoadingDelay ? "Almost Ready" : "Ready!")}
         </h3>
-        <p className="text-gray-600 text-sm max-w-sm">
+        <p className="text-gray-600 text-sm">
           {isMapLoading 
-            ? "Preparing thousands of speech therapy centers across North America..." 
-            : `Almost there... ${Math.round(loadingProgress)}% complete`}
+            ? "Preparing speech therapy centers..." 
+            : (showLoadingDelay ? `${Math.round(loadingProgress)}% complete` : "Starting app...")}
         </p>
-        
-        {/* Progress bar for delay phase */}
-        {!isMapLoading && showLoadingDelay && (
-          <div className="w-48 h-1 bg-gray-200 rounded-full overflow-hidden mx-auto mt-3">
-            <div 
-              className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-100 ease-out"
-              style={{ width: `${loadingProgress}%` }}
-            ></div>
-          </div>
-        )}
       </div>
       
-      {/* Animated Dots */}
-      <div className="flex space-x-2">
-        <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
-        <div 
-          className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" 
-          style={{ animationDelay: '0.1s' }}
-        ></div>
-        <div 
-          className="w-3 h-3 bg-pink-500 rounded-full animate-bounce" 
-          style={{ animationDelay: '0.2s' }}
-        ></div>
+      {/* Simple dots - no animation */}
+      <div className="flex space-x-1 justify-center">
+        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+        <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
+        <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
       </div>
     </div>
   );
