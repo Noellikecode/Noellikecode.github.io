@@ -210,3 +210,10 @@
 .relative .absolute {
   z-index: 999 !important;
 }
+
+/* Additional dropdown positioning fixes for filter controls */
+[data-radix-select-content] {
+  z-index: 10000 !important;
+  position: fixed !important;
+  min-width: var(--radix-select-trigger-width) !important;
+}

@@ -179,7 +179,7 @@ export default function Home() {
       </header>
 
       {/* Map Controls */}
-      <div className="bg-white border-b px-4 py-3 flex-shrink-0 relative z-10">
+      <div className="bg-white border-b px-4 py-3 flex-shrink-0 relative z-30">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
@@ -188,7 +188,7 @@ export default function Home() {
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100]" position="popper" sideOffset={4}>
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="low-cost">Low Cost</SelectItem>
                   <SelectItem value="market-rate">Market Rate</SelectItem>
@@ -201,7 +201,7 @@ export default function Home() {
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="All Services" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100]" position="popper" sideOffset={4}>
                   <SelectItem value="all">All Services</SelectItem>
                   <SelectItem value="speech-therapy">Speech Therapy</SelectItem>
                   <SelectItem value="language-therapy">Language Therapy</SelectItem>
@@ -220,7 +220,7 @@ export default function Home() {
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="All States" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100]" position="popper" sideOffset={4}>
                   <SelectItem value="all">All States</SelectItem>
                   <SelectItem value="Alabama">Alabama</SelectItem>
                   <SelectItem value="Alaska">Alaska</SelectItem>
