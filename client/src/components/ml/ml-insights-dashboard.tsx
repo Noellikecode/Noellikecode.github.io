@@ -36,13 +36,18 @@ export default function MLInsightsDashboard({
   const [isExpanded, setIsExpanded] = useState(true);
   const [currentState, setCurrentState] = useState(filters.state);
 
-  // Force refresh when state filter changes
+  // Force refresh when state filter changes or component mounts
   useEffect(() => {
     if (currentState !== filters.state) {
       setCurrentState(filters.state);
       queryClient.invalidateQueries({ queryKey: ["/api/ml/insights"] });
     }
   }, [filters.state, currentState]);
+
+  // Force refresh on mount to show latest data
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["/api/ml/insights"] });
+  }, []);
 
   const { data: mlInsights, isLoading: mlLoading } = useQuery({
     queryKey: ["/api/ml/insights", filters.state],
@@ -52,11 +57,12 @@ export default function MLInsightsDashboard({
       if (!res.ok) throw new Error("Failed to fetch ML insights");
       return res.json();
     },
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: 30000, // Refresh every 30 seconds  
     retry: 1, // Only retry once
-    staleTime: 10000, // Shorter cache for immediate updates
+    staleTime: 0, // Always fetch fresh data
     enabled: isVisible, // Only fetch when dashboard is visible
     refetchOnMount: true, // Always fetch fresh data when component mounts
+    refetchOnWindowFocus: true, // Refresh when window gains focus
   });
 
   if (!isVisible) return null;
@@ -180,14 +186,14 @@ export default function MLInsightsDashboard({
                 </div>
 
                 {/* Highest Retention Clinics */}
-                {insights.highestRetentionClinics?.length > 0 && (
+                {insights.coverage?.highestRetentionClinics?.length > 0 && (
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
                     <div className="flex items-center space-x-2 mb-2">
                       <Crown className="h-4 w-4 text-green-600" />
                       <span className="text-xs font-semibold text-green-800">Highest Retention Rate Clinics</span>
                     </div>
                     <div className="space-y-2">
-                      {insights.highestRetentionClinics.slice(0, 3).map((clinic: any, index: number) => (
+                      {insights.coverage.highestRetentionClinics.slice(0, 3).map((clinic: any, index: number) => (
                         <div key={index} className="bg-white p-2 rounded border border-green-100">
                           <div className="flex items-center justify-between">
                             <div>
