@@ -144,62 +144,7 @@
   opacity: 0.5 !important;
 }
 
-/* Beautiful pin markers */
-.beautiful-pin-marker {
-  cursor: pointer !important;
-  background: transparent !important;
-  border: none !important;
-}
-
-.pin-container {
-  position: relative;
-  width: 28px;
-  height: 36px;
-}
-
-.pin-body {
-  width: 24px;
-  height: 30px;
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
-  border: 2px solid #1e40af;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  position: relative;
-  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.4);
-  transition: all 0.2s ease;
-}
-
-.pin-inner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(45deg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pin-shadow {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 12px;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 50%;
-  filter: blur(2px);
-}
-
-/* Hover effects for beautiful pins */
-.beautiful-pin-marker:hover .pin-body {
-  transform: rotate(-45deg) scale(1.1);
-  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.6);
-}
-
-.beautiful-pin-marker:hover .pin-shadow {
-  transform: translateX(-50%) scale(1.2);
-}
+/* Standard Leaflet marker styling (original deployment style) */
 
 .leaflet-control-container .leaflet-routing-container-hide {
   display: none;
