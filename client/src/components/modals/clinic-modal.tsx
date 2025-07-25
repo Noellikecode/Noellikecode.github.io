@@ -38,10 +38,13 @@ export default function ClinicModal({ clinic, isOpen, onClose }: ClinicModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="max-w-lg max-h-[90vh] overflow-y-auto"
+        aria-describedby={`clinic-details-${clinic.id}`}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">{clinic.name}</DialogTitle>
-          <p className="text-gray-600 flex items-center mt-1">
+          <p className="text-gray-600 flex items-center mt-1" id={`clinic-details-${clinic.id}`}>
             <MapPin className="text-primary mr-1 h-4 w-4" />
             {clinic.city}, {clinic.country}
           </p>

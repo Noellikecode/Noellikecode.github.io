@@ -92,18 +92,18 @@
   }
 }
 
-/* Disable UI animations for performance - but preserve map functionality */
-*:not([class*="leaflet"]):not(.leaflet-container *), 
-*:not([class*="leaflet"]):not(.leaflet-container *)::before, 
-*:not([class*="leaflet"]):not(.leaflet-container *)::after {
+/* Disable UI animations for performance - but preserve map functionality and modals */
+*:not([class*="leaflet"]):not(.leaflet-container *):not([data-radix-portal]):not([data-radix-portal] *), 
+*:not([class*="leaflet"]):not(.leaflet-container *):not([data-radix-portal]):not([data-radix-portal] *)::before, 
+*:not([class*="leaflet"]):not(.leaflet-container *):not([data-radix-portal]):not([data-radix-portal] *)::after {
   animation-duration: 0s !important;
   animation-delay: 0s !important;
   transition-duration: 0s !important;
   transition-delay: 0s !important;
 }
 
-/* Remove transforms from non-map elements only */
-*:not([class*="leaflet"]):not(.leaflet-container *) {
+/* Remove transforms from non-map elements only - exclude dialog/modal elements */
+*:not([class*="leaflet"]):not(.leaflet-container *):not([data-radix-portal]):not([data-radix-portal] *) {
   transform: none !important;
 }
 
