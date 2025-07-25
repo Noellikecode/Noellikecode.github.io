@@ -160,7 +160,30 @@
   background-repeat: no-repeat;
 }
 
-/* Shadow removed per user request */
+/* Very faint shadow that only appears after welcome modal */
+.marker-shadow {
+  position: absolute;
+  top: 41px;
+  left: -6px;
+  width: 41px;
+  height: 41px;
+  background-image: url('https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png');
+  background-size: 41px 41px;
+  background-repeat: no-repeat;
+  opacity: 0.15; /* Very faint shadow */
+  z-index: -1;
+  transition: opacity 0.3s ease;
+}
+
+/* Hide shadows when welcome modal is visible */
+.leaflet-style-marker.no-shadow .marker-shadow {
+  opacity: 0 !important;
+}
+
+/* Show very faint shadows after modal is dismissed */
+.leaflet-style-marker.with-shadow .marker-shadow {
+  opacity: 0.15;
+}
 
 .leaflet-control-container .leaflet-routing-container-hide {
   display: none;
