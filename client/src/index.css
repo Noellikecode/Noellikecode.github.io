@@ -92,7 +92,7 @@
   }
 }
 
-/* Disable ALL animations for maximum performance */
+/* Disable ALL animations for maximum performance - but allow Leaflet to work */
 *, *::before, *::after {
   animation-duration: 0s !important;
   animation-delay: 0s !important;
@@ -100,8 +100,8 @@
   transition-delay: 0s !important;
 }
 
-/* Remove transform GPU usage */
-* {
+/* Remove transform GPU usage - but allow Leaflet transforms */
+*:not(.leaflet-container):not(.leaflet-tile):not(.leaflet-marker-icon):not(.leaflet-marker-shadow) {
   transform: none !important;
 }
 
@@ -111,7 +111,23 @@
   width: 100% !important;
   background: #a7c8ed;
   z-index: 1;
-  min-width: 100vw;
+  position: relative !important;
+}
+
+.leaflet-tile-pane {
+  z-index: 1 !important;
+}
+
+.leaflet-overlay-pane {
+  z-index: 2 !important;
+}
+
+.leaflet-marker-pane {
+  z-index: 3 !important;
+}
+
+.leaflet-popup-pane {
+  z-index: 4 !important;
 }
 
 .leaflet-control-container .leaflet-routing-container-hide {
