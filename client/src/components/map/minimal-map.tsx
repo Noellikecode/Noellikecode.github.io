@@ -43,12 +43,16 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
         
         await cssLoaded;
 
-        // Configure Leaflet icons
+        // Configure Leaflet icons with proper defaults
         delete (L.Icon.Default.prototype as any)._getIconUrl;
         L.Icon.Default.mergeOptions({
           iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
           iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
           shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
         });
 
         // Create map with explicit container dimensions
@@ -100,7 +104,17 @@ export default function MinimalMap({ filteredClinics, onClinicClick, isLoading }
           const chunk = validClinics.slice(currentIndex, currentIndex + chunkSize);
           
           chunk.forEach(clinic => {
-            const marker = L.marker([clinic.latitude, clinic.longitude])
+            // Create custom icon to ensure visibility
+            const customIcon = L.icon({
+              iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+              shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              shadowSize: [41, 41]
+            });
+            
+            const marker = L.marker([clinic.latitude, clinic.longitude], { icon: customIcon })
               .addTo(map)
               .bindPopup(`<strong>${clinic.name}</strong><br/>${clinic.city}`)
               .on('click', () => onClinicClick(clinic));
