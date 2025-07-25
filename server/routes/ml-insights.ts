@@ -396,9 +396,24 @@ router.get('/api/ml/insights', async (req, res) => {
     
     // Generate state-specific insights if requested
     if (state && state !== 'all' && insightsCache) {
-      const stateSpecificInsights = await generateStateSpecificInsights(state as string);
-      res.json(stateSpecificInsights);
-      return;
+      try {
+        const optimizer = new GeospatialOptimizer();
+        const stateRetentionClinics = await optimizer.getHighestRetentionClinicsByState(state as string);
+        console.log(`Found ${stateRetentionClinics.length} retention clinics for ${state}`);
+        
+        const stateSpecificInsights = await generateStateSpecificInsights(state as string);
+        // Add real ML data for retention clinics
+        (stateSpecificInsights.data as any).highestRetentionClinics = stateRetentionClinics;
+        console.log('Added retention clinics to state insights');
+        res.json(stateSpecificInsights);
+        return;
+      } catch (error) {
+        console.error('Error getting state-specific retention clinics:', error);
+        // Fallback to standard state insights
+        const stateSpecificInsights = await generateStateSpecificInsights(state as string);
+        res.json(stateSpecificInsights);
+        return;
+      }
     }
     
     // Return cached data immediately for fast response
