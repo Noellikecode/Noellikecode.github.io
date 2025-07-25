@@ -297,7 +297,7 @@ export default function Home() {
       </div>
 
       {/* Map Container - Takes remaining full height */}
-      <div className="flex-1 min-h-0 relative">
+      <div className="flex-1 min-h-0">
         <InteractiveMap 
           clinics={clinics}
           filteredClinics={filteredClinics} 
