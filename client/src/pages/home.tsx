@@ -121,11 +121,20 @@ export default function Home() {
     return filtered;
   }, [clinics, filters]);
 
-  // Optimized filter change handler
+  // Optimized filter change handler with cache invalidation
   const handleFilterChange = useCallback((key: string, value: any) => {
     console.log(`Filter changed: ${key} = ${value}`);
     setFilters(prev => ({ ...prev, [key]: value }));
     setHasAppliedFilters(true);
+    
+    // Force refresh of ML insights when state changes
+    if (key === 'state') {
+      import('@/lib/queryClient').then(({ queryClient }) => {
+        queryClient.invalidateQueries({ 
+          queryKey: ["/api/ml/insights"]
+        });
+      });
+    }
   }, []);
 
 

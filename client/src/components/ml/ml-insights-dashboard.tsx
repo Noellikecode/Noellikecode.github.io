@@ -16,8 +16,9 @@ import {
   Crown,
   Star
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Clinic } from "@/types/clinic";
+import { queryClient } from "@/lib/queryClient";
 
 interface MLInsightsDashboardProps {
   filteredClinics: Clinic[];
@@ -33,6 +34,15 @@ export default function MLInsightsDashboard({
   onToggle 
 }: MLInsightsDashboardProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [currentState, setCurrentState] = useState(filters.state);
+
+  // Force refresh when state filter changes
+  useEffect(() => {
+    if (currentState !== filters.state) {
+      setCurrentState(filters.state);
+      queryClient.invalidateQueries({ queryKey: ["/api/ml/insights"] });
+    }
+  }, [filters.state, currentState]);
 
   const { data: mlInsights, isLoading: mlLoading } = useQuery({
     queryKey: ["/api/ml/insights", filters.state],
@@ -44,8 +54,9 @@ export default function MLInsightsDashboard({
     },
     refetchInterval: 60000, // Refresh every minute
     retry: 1, // Only retry once
-    staleTime: 120000, // Cache for 2 minutes
+    staleTime: 10000, // Shorter cache for immediate updates
     enabled: isVisible, // Only fetch when dashboard is visible
+    refetchOnMount: true, // Always fetch fresh data when component mounts
   });
 
   if (!isVisible) return null;
