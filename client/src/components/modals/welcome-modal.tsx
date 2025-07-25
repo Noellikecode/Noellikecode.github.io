@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,6 +21,31 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
     teletherapy: false,
     state: "all",
   });
+  
+  const [showLoadingDelay, setShowLoadingDelay] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // Add 5-second delay after map loads before showing content
+  useEffect(() => {
+    if (!isMapLoading && showLoadingDelay) {
+      // Start progress animation
+      const progressInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(progressInterval);
+            setShowLoadingDelay(false);
+            return 100;
+          }
+          return prev + 2; // 2% every 100ms = 5 seconds total
+        });
+      }, 100);
+
+      return () => clearInterval(progressInterval);
+    } else if (isMapLoading) {
+      setShowLoadingDelay(true);
+      setLoadingProgress(0);
+    }
+  }, [isMapLoading, showLoadingDelay]);
 
   const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -66,11 +91,23 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
       {/* Loading Text with Typing Effect */}
       <div className="text-center space-y-2">
         <h3 className="text-xl font-semibold text-gray-800 animate-pulse">
-          Loading Your Speech Therapy Map
+          {isMapLoading ? "Loading Your Speech Therapy Map" : "Map Ready! Preparing Interface..."}
         </h3>
         <p className="text-gray-600 text-sm max-w-sm">
-          Preparing thousands of speech therapy centers across North America...
+          {isMapLoading 
+            ? "Preparing thousands of speech therapy centers across North America..." 
+            : `Almost there... ${Math.round(loadingProgress)}% complete`}
         </p>
+        
+        {/* Progress bar for delay phase */}
+        {!isMapLoading && showLoadingDelay && (
+          <div className="w-48 h-1 bg-gray-200 rounded-full overflow-hidden mx-auto mt-3">
+            <div 
+              className="h-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-100 ease-out"
+              style={{ width: `${loadingProgress}%` }}
+            ></div>
+          </div>
+        )}
       </div>
       
       {/* Animated Dots */}
@@ -91,7 +128,7 @@ export default function WelcomeModal({ isOpen, onClose, onApplyFilters, totalCli
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent className="max-w-2xl">
-        {isMapLoading ? (
+        {(isMapLoading || showLoadingDelay) ? (
           <LoadingContent />
         ) : (
           <>
