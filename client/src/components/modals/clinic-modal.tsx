@@ -39,8 +39,15 @@ export default function ClinicModal({ clinic, isOpen, onClose }: ClinicModalProp
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-lg max-h-[90vh] overflow-y-auto"
+        className="max-w-lg max-h-[90vh] overflow-y-auto !fixed !top-1/2 !left-1/2 !transform !-translate-x-1/2 !-translate-y-1/2 !z-[1000]"
         aria-describedby={`clinic-details-${clinic.id}`}
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 1000
+        }}
       >
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">{clinic.name}</DialogTitle>

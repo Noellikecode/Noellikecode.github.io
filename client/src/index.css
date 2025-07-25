@@ -103,8 +103,17 @@
 }
 
 /* Remove transforms from non-map elements only - exclude dialog/modal elements */
-*:not([class*="leaflet"]):not(.leaflet-container *):not([data-radix-portal]):not([data-radix-portal] *) {
+*:not([class*="leaflet"]):not(.leaflet-container *):not([data-radix-portal]):not([data-radix-portal] *):not([data-state]) {
   transform: none !important;
+}
+
+/* Force dialog content to center properly */
+[data-radix-dialog-content] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 1000 !important;
 }
 
 /* Leaflet map styling fixes */
