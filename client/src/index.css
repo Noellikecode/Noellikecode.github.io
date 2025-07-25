@@ -211,30 +211,4 @@
   z-index: 999 !important;
 }
 
-/* Force dropdown positioning fixes for filter controls */
-[data-radix-select-content] {
-  z-index: 10000 !important;
-  position: absolute !important;
-  min-width: var(--radix-select-trigger-width) !important;
-  transform-origin: top !important;
-  top: 100% !important;
-  left: 0 !important;
-  margin-top: 4px !important;
-}
-
-/* Override any transform positioning */
-[data-radix-popper-content-wrapper] {
-  position: relative !important;
-  transform: none !important;
-}
-
-/* Ensure triggers maintain proper stacking context */
-[data-radix-select-trigger] {
-  position: relative !important;
-  z-index: 1 !important;
-}
-
-/* Force Select content to stay positioned relative to trigger */
-[data-radix-select-viewport] {
-  position: relative !important;
-}
+/* Restore original working dropdown positioning */
