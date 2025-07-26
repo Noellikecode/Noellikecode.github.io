@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: speech-access-map
+    env: node
+    buildCommand: npm run build
+    startCommand: node build/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: speech-access-db
+          property: connectionString
+    healthCheckPath: /
+    numInstances: 1
+
+databases:
+  - name: speech-access-db
+    databaseName: speech_access
+    user: postgres
